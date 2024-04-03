@@ -1,0 +1,3 @@
+C:/Users/ciel/Documents/dev/re/sky/canvas/build/CMakeFiles/POWRPROF.dir
+C:/Users/ciel/Documents/dev/re/sky/canvas/build/CMakeFiles/edit_cache.dir
+C:/Users/ciel/Documents/dev/re/sky/canvas/build/CMakeFiles/rebuild_cache.dir
