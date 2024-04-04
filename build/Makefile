@@ -118,6 +118,174 @@ POWRPROF\fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\build
 .PHONY : POWRPROF\fast
 
+include\imgui\imgui.obj: include\imgui\imgui.cpp.obj
+.PHONY : include\imgui\imgui.obj
+
+# target to build an object file
+include\imgui\imgui.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui.cpp.obj
+.PHONY : include\imgui\imgui.cpp.obj
+
+include\imgui\imgui.i: include\imgui\imgui.cpp.i
+.PHONY : include\imgui\imgui.i
+
+# target to preprocess a source file
+include\imgui\imgui.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui.cpp.i
+.PHONY : include\imgui\imgui.cpp.i
+
+include\imgui\imgui.s: include\imgui\imgui.cpp.s
+.PHONY : include\imgui\imgui.s
+
+# target to generate assembly for a file
+include\imgui\imgui.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui.cpp.s
+.PHONY : include\imgui\imgui.cpp.s
+
+include\imgui\imgui_demo.obj: include\imgui\imgui_demo.cpp.obj
+.PHONY : include\imgui\imgui_demo.obj
+
+# target to build an object file
+include\imgui\imgui_demo.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_demo.cpp.obj
+.PHONY : include\imgui\imgui_demo.cpp.obj
+
+include\imgui\imgui_demo.i: include\imgui\imgui_demo.cpp.i
+.PHONY : include\imgui\imgui_demo.i
+
+# target to preprocess a source file
+include\imgui\imgui_demo.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_demo.cpp.i
+.PHONY : include\imgui\imgui_demo.cpp.i
+
+include\imgui\imgui_demo.s: include\imgui\imgui_demo.cpp.s
+.PHONY : include\imgui\imgui_demo.s
+
+# target to generate assembly for a file
+include\imgui\imgui_demo.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_demo.cpp.s
+.PHONY : include\imgui\imgui_demo.cpp.s
+
+include\imgui\imgui_draw.obj: include\imgui\imgui_draw.cpp.obj
+.PHONY : include\imgui\imgui_draw.obj
+
+# target to build an object file
+include\imgui\imgui_draw.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_draw.cpp.obj
+.PHONY : include\imgui\imgui_draw.cpp.obj
+
+include\imgui\imgui_draw.i: include\imgui\imgui_draw.cpp.i
+.PHONY : include\imgui\imgui_draw.i
+
+# target to preprocess a source file
+include\imgui\imgui_draw.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_draw.cpp.i
+.PHONY : include\imgui\imgui_draw.cpp.i
+
+include\imgui\imgui_draw.s: include\imgui\imgui_draw.cpp.s
+.PHONY : include\imgui\imgui_draw.s
+
+# target to generate assembly for a file
+include\imgui\imgui_draw.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_draw.cpp.s
+.PHONY : include\imgui\imgui_draw.cpp.s
+
+include\imgui\imgui_impl_vulkan.obj: include\imgui\imgui_impl_vulkan.cpp.obj
+.PHONY : include\imgui\imgui_impl_vulkan.obj
+
+# target to build an object file
+include\imgui\imgui_impl_vulkan.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_impl_vulkan.cpp.obj
+.PHONY : include\imgui\imgui_impl_vulkan.cpp.obj
+
+include\imgui\imgui_impl_vulkan.i: include\imgui\imgui_impl_vulkan.cpp.i
+.PHONY : include\imgui\imgui_impl_vulkan.i
+
+# target to preprocess a source file
+include\imgui\imgui_impl_vulkan.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_impl_vulkan.cpp.i
+.PHONY : include\imgui\imgui_impl_vulkan.cpp.i
+
+include\imgui\imgui_impl_vulkan.s: include\imgui\imgui_impl_vulkan.cpp.s
+.PHONY : include\imgui\imgui_impl_vulkan.s
+
+# target to generate assembly for a file
+include\imgui\imgui_impl_vulkan.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_impl_vulkan.cpp.s
+.PHONY : include\imgui\imgui_impl_vulkan.cpp.s
+
+include\imgui\imgui_impl_win32.obj: include\imgui\imgui_impl_win32.cpp.obj
+.PHONY : include\imgui\imgui_impl_win32.obj
+
+# target to build an object file
+include\imgui\imgui_impl_win32.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_impl_win32.cpp.obj
+.PHONY : include\imgui\imgui_impl_win32.cpp.obj
+
+include\imgui\imgui_impl_win32.i: include\imgui\imgui_impl_win32.cpp.i
+.PHONY : include\imgui\imgui_impl_win32.i
+
+# target to preprocess a source file
+include\imgui\imgui_impl_win32.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_impl_win32.cpp.i
+.PHONY : include\imgui\imgui_impl_win32.cpp.i
+
+include\imgui\imgui_impl_win32.s: include\imgui\imgui_impl_win32.cpp.s
+.PHONY : include\imgui\imgui_impl_win32.s
+
+# target to generate assembly for a file
+include\imgui\imgui_impl_win32.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_impl_win32.cpp.s
+.PHONY : include\imgui\imgui_impl_win32.cpp.s
+
+include\imgui\imgui_tables.obj: include\imgui\imgui_tables.cpp.obj
+.PHONY : include\imgui\imgui_tables.obj
+
+# target to build an object file
+include\imgui\imgui_tables.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_tables.cpp.obj
+.PHONY : include\imgui\imgui_tables.cpp.obj
+
+include\imgui\imgui_tables.i: include\imgui\imgui_tables.cpp.i
+.PHONY : include\imgui\imgui_tables.i
+
+# target to preprocess a source file
+include\imgui\imgui_tables.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_tables.cpp.i
+.PHONY : include\imgui\imgui_tables.cpp.i
+
+include\imgui\imgui_tables.s: include\imgui\imgui_tables.cpp.s
+.PHONY : include\imgui\imgui_tables.s
+
+# target to generate assembly for a file
+include\imgui\imgui_tables.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_tables.cpp.s
+.PHONY : include\imgui\imgui_tables.cpp.s
+
+include\imgui\imgui_widgets.obj: include\imgui\imgui_widgets.cpp.obj
+.PHONY : include\imgui\imgui_widgets.obj
+
+# target to build an object file
+include\imgui\imgui_widgets.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_widgets.cpp.obj
+.PHONY : include\imgui\imgui_widgets.cpp.obj
+
+include\imgui\imgui_widgets.i: include\imgui\imgui_widgets.cpp.i
+.PHONY : include\imgui\imgui_widgets.i
+
+# target to preprocess a source file
+include\imgui\imgui_widgets.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_widgets.cpp.i
+.PHONY : include\imgui\imgui_widgets.cpp.i
+
+include\imgui\imgui_widgets.s: include\imgui\imgui_widgets.cpp.s
+.PHONY : include\imgui\imgui_widgets.s
+
+# target to generate assembly for a file
+include\imgui\imgui_widgets.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\include\imgui\imgui_widgets.cpp.s
+.PHONY : include\imgui\imgui_widgets.cpp.s
+
 main.obj: main.cpp.obj
 .PHONY : main.obj
 
@@ -142,6 +310,54 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\main.cpp.s
 .PHONY : main.cpp.s
 
+menu.obj: menu.cpp.obj
+.PHONY : menu.obj
+
+# target to build an object file
+menu.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\menu.cpp.obj
+.PHONY : menu.cpp.obj
+
+menu.i: menu.cpp.i
+.PHONY : menu.i
+
+# target to preprocess a source file
+menu.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\menu.cpp.i
+.PHONY : menu.cpp.i
+
+menu.s: menu.cpp.s
+.PHONY : menu.s
+
+# target to generate assembly for a file
+menu.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\menu.cpp.s
+.PHONY : menu.cpp.s
+
+vulkan_hooks.obj: vulkan_hooks.cpp.obj
+.PHONY : vulkan_hooks.obj
+
+# target to build an object file
+vulkan_hooks.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\vulkan_hooks.cpp.obj
+.PHONY : vulkan_hooks.cpp.obj
+
+vulkan_hooks.i: vulkan_hooks.cpp.i
+.PHONY : vulkan_hooks.i
+
+# target to preprocess a source file
+vulkan_hooks.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\vulkan_hooks.cpp.i
+.PHONY : vulkan_hooks.cpp.i
+
+vulkan_hooks.s: vulkan_hooks.cpp.s
+.PHONY : vulkan_hooks.s
+
+# target to generate assembly for a file
+vulkan_hooks.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\POWRPROF.dir\build.make /nologo -$(MAKEFLAGS) CMakeFiles\POWRPROF.dir\vulkan_hooks.cpp.s
+.PHONY : vulkan_hooks.cpp.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -151,9 +367,36 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... POWRPROF
+	@echo ... include/imgui/imgui.obj
+	@echo ... include/imgui/imgui.i
+	@echo ... include/imgui/imgui.s
+	@echo ... include/imgui/imgui_demo.obj
+	@echo ... include/imgui/imgui_demo.i
+	@echo ... include/imgui/imgui_demo.s
+	@echo ... include/imgui/imgui_draw.obj
+	@echo ... include/imgui/imgui_draw.i
+	@echo ... include/imgui/imgui_draw.s
+	@echo ... include/imgui/imgui_impl_vulkan.obj
+	@echo ... include/imgui/imgui_impl_vulkan.i
+	@echo ... include/imgui/imgui_impl_vulkan.s
+	@echo ... include/imgui/imgui_impl_win32.obj
+	@echo ... include/imgui/imgui_impl_win32.i
+	@echo ... include/imgui/imgui_impl_win32.s
+	@echo ... include/imgui/imgui_tables.obj
+	@echo ... include/imgui/imgui_tables.i
+	@echo ... include/imgui/imgui_tables.s
+	@echo ... include/imgui/imgui_widgets.obj
+	@echo ... include/imgui/imgui_widgets.i
+	@echo ... include/imgui/imgui_widgets.s
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
+	@echo ... menu.obj
+	@echo ... menu.i
+	@echo ... menu.s
+	@echo ... vulkan_hooks.obj
+	@echo ... vulkan_hooks.i
+	@echo ... vulkan_hooks.s
 .PHONY : help
 
 

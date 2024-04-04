@@ -235,3 +235,87 @@ C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/corecrt_stdio_c
 C:/Users/ciel/Documents/dev/re/sky/canvas/include/libmem/libmem.h
 C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/stdint.h
 C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/assert.h
+C:/VulkanSDK/1.3.280.0/Include/vulkan/vulkan.h
+C:/VulkanSDK/1.3.280.0/Include/vulkan/vk_platform.h
+C:/VulkanSDK/1.3.280.0/Include/vulkan/vulkan_core.h
+C:/VulkanSDK/1.3.280.0/Include/vk_video/vulkan_video_codec_h264std.h
+C:/VulkanSDK/1.3.280.0/Include/vk_video/vulkan_video_codecs_common.h
+C:/VulkanSDK/1.3.280.0/Include/vk_video/vulkan_video_codec_h264std_encode.h
+C:/VulkanSDK/1.3.280.0/Include/vk_video/vulkan_video_codec_h265std.h
+C:/VulkanSDK/1.3.280.0/Include/vk_video/vulkan_video_codec_h265std_encode.h
+C:/VulkanSDK/1.3.280.0/Include/vk_video/vulkan_video_codec_h264std_decode.h
+C:/VulkanSDK/1.3.280.0/Include/vk_video/vulkan_video_codec_h265std_decode.h
+C:/VulkanSDK/1.3.280.0/Include/vk_video/vulkan_video_codec_av1std.h
+C:/VulkanSDK/1.3.280.0/Include/vk_video/vulkan_video_codec_av1std_decode.h
+C:/Users/ciel/Documents/dev/re/sky/canvas/vulkan_hooks.hpp
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/thread
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/yvals_core.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/xkeycheck.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/__msvc_chrono.hpp
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/yvals.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/crtdbg.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/vcruntime_new_debug.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/vcruntime_new.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/crtdefs.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/use_ansi.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/ctime
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/time.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/corecrt_wtime.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/limits
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/cfloat
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/float.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/climits
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/cwchar
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/cstdio
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/wchar.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/corecrt_wconio.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/corecrt_wdirect.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/corecrt_wio.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/corecrt_share.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/corecrt_wprocess.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/sys/stat.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/sys/types.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/xtr1common
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/intrin0.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/intrin0.inl.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/ratio
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/cstdint
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/type_traits
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/cstddef
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/utility
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/initializer_list
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/xtimec.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/memory
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/exception
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/cstdlib
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/math.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/corecrt_math.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/malloc.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/vcruntime_exception.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/eh.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/corecrt_terminate.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/iosfwd
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/cstring
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/typeinfo
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/vcruntime_typeinfo.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/xmemory
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/new
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/xatomic.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/xutility
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/__msvc_iter_core.hpp
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/process.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/corecrt_startup.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/ucrt/math.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/vcruntime_startup.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/string
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/xstring
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/__msvc_sanitizer_annotate_container.hpp
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/xpolymorphic_allocator.h
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/tuple
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/cctype
+C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/include/xthreads.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/shared/dxgi.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/um/ocidl.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/shared/dxgicommon.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/shared/dxgitype.h
+C:/Program Files (x86)/Windows Kits/10/include/10.0.22621.0/shared/dxgiformat.h

@@ -4,7 +4,7 @@
 # compile CXX with C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.39.33519/bin/Hostx64/x64/cl.exe
 CXX_DEFINES = -DPOWRPROF_EXPORTS
 
-CXX_INCLUDES = 
+CXX_INCLUDES = -IC:\VulkanSDK\1.3.280.0\Include
 
-CXX_FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1
+CXX_FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd -D_ITERATOR_DEBUG_LEVEL=2 /MDd /Zi /Ob0 /Od /RTC1 -std:c++17
 
