@@ -5,6 +5,7 @@
 #include "vulkan_hooks.hpp"
 #include <thread>
 #include <dxgi.h>
+#include "menu.hpp"
 
 uintptr_t sky = NULL;
 uintptr_t Game = 0;
@@ -175,11 +176,35 @@ HWND GetProcessWindow( ) {
 	return hwnd;
 }
 
+static WNDPROC oWndProc;
+static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    if (uMsg == WM_KEYDOWN) {
+        if (wParam == VK_INSERT) {
+            Menu::bShowMenu = !Menu::bShowMenu;
+            return 0;
+        }    
+    }
+    LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    if (Menu::bShowMenu) {
+        ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+
+        // (Doesn't work for some games like 'Sid Meier's Civilization VI')
+        // Window may not maximize from taskbar because 'H::bShowDemoWindow' is set to true by default. ('hooks.hpp')
+        //
+        // return ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam) == 0;
+    }
+
+    return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
+}
+
 
 
 DWORD WINAPI hook_thread(PVOID lParam){
 	HWND window = GetProcessWindow();
 	VK::Hook(window);
+
+
+	oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
 	return EXIT_SUCCESS;
 }
 

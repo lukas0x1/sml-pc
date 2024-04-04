@@ -857,6 +857,7 @@ CMakeFiles\POWRPROF.dir\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\in
 CMakeFiles\POWRPROF.dir\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.22621.0\shared\dxgicommon.h"
 CMakeFiles\POWRPROF.dir\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.22621.0\shared\dxgitype.h"
 CMakeFiles\POWRPROF.dir\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.22621.0\shared\dxgiformat.h"
+CMakeFiles\POWRPROF.dir\main.cpp.obj: C:\Users\ciel\Documents\dev\re\sky\canvas\menu.hpp
 
 
 CMakeFiles\POWRPROF.dir\menu.cpp.obj: C:\Users\ciel\Documents\dev\re\sky\canvas\menu.cpp
