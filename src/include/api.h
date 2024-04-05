@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 #include <string>
 
@@ -16,7 +18,7 @@
 
 typedef struct ModInfo {
     std::string name;
-    std::string authour;
+    std::string author;
     std::string description;
     std::string version;
 }ModInfo;

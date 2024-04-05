@@ -18,7 +18,7 @@
 
 typedef struct ModInfo {
     std::string name;
-    std::string authour;
+    std::string author;
     std::string description;
     std::string version;
 }ModInfo;
@@ -38,4 +38,4 @@ public:
     void UnHook(uintptr_t addr);
 };
 
-#define API = ModApi::Instance()
+#define API ModApi::Instance()

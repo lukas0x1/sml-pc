@@ -3,6 +3,8 @@
 #include <imgui_impl_win32.h>
 #include "include/menu.hpp"
 #include "include/global_variables.h"
+#include "include/mod_loader.h"
+
 namespace ig = ImGui;
 namespace gv = GlobalVariables;
 
@@ -25,6 +27,21 @@ namespace Menu {
                 uint32_t* accountType = (uint32_t*)(accountManager + 0xf64);
                 *accountType = 0;
             }
+
+            ig::BeginTabBar("##mods");
+
+            for(int i = 0; i < ModLoader::GetModCount(); i++) {
+                auto& info = ModLoader::GetModInfo(i);
+                if(ig::BeginTabItem(info.name.c_str( ))) {
+                    ModLoader::CallModRender(i);
+
+                    ig::Text("%s", ModLoader::toString(i).c_str());
+                }
+            }
+
+
+            ig::EndTabBar( );
+
         ig::End();
     }
 

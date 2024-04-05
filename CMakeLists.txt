@@ -6,6 +6,14 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
 file(GLOB CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp )
 
+file(GLOB MOD_DEMO_SRC ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/*.cpp )
+
+add_library(
+	demo
+	SHARED
+	${MOD_DEMO_SRC}
+	)
+
 add_library(
 	POWRPROF
 	SHARED
@@ -36,11 +44,20 @@ include_directories(
 	include/libmem
 )
 
+add_compile_definitions(cxx_std_17)
+
 target_compile_features(POWRPROF PRIVATE cxx_std_17)
+target_compile_features(demo PRIVATE cxx_std_17)
+
 target_include_directories(POWRPROF PRIVATE ${VULKAN_INCLUDE_DIR})
 
 target_link_libraries(
 	POWRPROF
 	${LIBMEM_PATH}
 	${VULKAN_LIBRARY}
+	)
+
+target_link_libraries(
+	demo
+	POWRPROF
 	)

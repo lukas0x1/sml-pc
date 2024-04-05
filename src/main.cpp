@@ -10,6 +10,7 @@
 #include "include/vulkan_hooks.hpp"
 #include "include/menu.hpp"
 #include "include/global_variables.h"
+#include "include/mod_loader.h"
 
 namespace gv = GlobalVariables;
 
@@ -94,7 +95,7 @@ DWORD WINAPI DllThread(LPVOID lpParam){
     gv::InitGlobalVariables(ModApi::Instance().GetSkyBase());
 
     HOOK_SET(ModApi::Instance().GetSkyBase() + 0x13311C0, AvatarEnergy_Use);
-
+    ModLoader::LoadMods();
     //uintptr_t CheckpointBarn = *(uintptr_t *)(gv::gamePtr + 0x1);
     CheckpointBarn_m_ChangeLevel = (uintptr_t (*)(uintptr_t, uintptr_t, const char *))(ModApi::Instance().GetSkyBase() + 0x1188810);
 
