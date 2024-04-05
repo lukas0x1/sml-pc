@@ -21,15 +21,15 @@ namespace Menu {
 
     void SMLMainMenu(){
         char buf[64];
-        ig::Begin("SML Main");
-
-            ig::BeginTabBar("##mods");
+        ig::SetNextWindowSize({200, 0}, ImGuiCond_Once);
+        if(ig::Begin("SML Main")) {
+            ig::BeginTable("##mods", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBody);
+            ig::TableSetupColumn("Mod", ImGuiTableColumnFlags_WidthStretch);
+            ig::TableSetupColumn( "Info", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("Info").x);
 
             for(int i = 0; i < ModLoader::GetModCount(); i++) {
-                auto& info = ModLoader::GetModInfo(i);
-                snprintf(buf, 64, "%s##%d", info.name.c_str(), i);
-                if(ig::BeginTabItem(info.name.c_str( ))) {
-                    snprintf(buf, 64, "enable##%d", i);
+                    snprintf(buf, 64, "%s##check%d", ModLoader::GetModName(i).data(), i);
+                    ig::TableNextColumn();
                     if(ig::Checkbox(buf, &ModLoader::GetModEnabled(i))) {
                         if(ModLoader::GetModEnabled(i)) {
                             ModLoader::EnableMod(i);
@@ -37,12 +37,18 @@ namespace Menu {
                             ModLoader::DisableMod(i);
                         }
                     }
-                    ig::Text("%s", ModLoader::toString(i).c_str());
-                    ModLoader::Render(i);
-                }
+                    ig::TableNextColumn();
+                    ig::TextDisabled("(?)");
+                    if (ig::BeginItemTooltip())
+                    {
+                        ig::PushTextWrapPos(ig::GetFontSize() * 35.0f);
+                        ig::TextUnformatted(ModLoader::toString(i).c_str());
+                        ig::PopTextWrapPos();
+                        ig::EndTooltip();
+                    }
             }
-            ig::EndTabBar( );
-
+            ig::EndTable();
+        }
         ig::End();
     }
 
@@ -50,6 +56,7 @@ namespace Menu {
         if (!bShowMenu)
             return;
         SMLMainMenu();
+        ModLoader::RenderAll();
         //ig::ShowDemoWindow( );
     }
 } // namespace Menu

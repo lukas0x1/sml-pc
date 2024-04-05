@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <windows.h>
 #include <vector>
+#include <string_view>
 
 #include "api.h"
 
@@ -39,13 +40,13 @@ class ModLoader {
 
 public:
     static void LoadMods();
+    static void RenderAll();
     static size_t GetModCount();
     static const ModInfo& GetModInfo(int index);
+    static std::string_view GetModName(int index);
     static bool& GetModEnabled(int index);
-
     static void Render(int index);
     static void EnableMod(int index);
     static void DisableMod(int index);
-
     static std::string toString(int idx);
 };

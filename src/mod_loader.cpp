@@ -74,6 +74,16 @@ bool& ModLoader::GetModEnabled(int index) {
     return mods[index].enabled;
 }
 
+std::string_view ModLoader::GetModName(int index) {
+    return mods[index].info.name;
+}
+
+
+void ModLoader::RenderAll() {
+    for(int i = 0 ; i < mods.size(); i++) {
+        Render(i);
+    }
+}
 std::string ModLoader::toString(int index) {
     std::stringstream ss;
     

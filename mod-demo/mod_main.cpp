@@ -29,12 +29,13 @@ void onDisable(){
 }
 
 void Render() {
-    ImGui::Begin(MOD_NAME);
-    if(ImGui::Button("Login With Local Account", {-1, 0})) {
-        uintptr_t accountManager = *(uintptr_t*)(gv::gamePtr + 0x1D8);
-        uint32_t* accountType = (uint32_t*)(accountManager + 0xf64);
-        *accountType = 0;
+    if(ImGui::Begin(MOD_NAME)) {
+        if(ImGui::Button("Login With Local Account", {-1, 0})) {
+            uintptr_t accountManager = *(uintptr_t*)(gv::gamePtr + 0x1D8);
+            uint32_t* accountType = (uint32_t*)(accountManager + 0xf64);
+            *accountType = 0;
+        }
+        ImGui::End();
     }
-    ImGui::End();
 
 }
