@@ -1,5 +1,12 @@
 #include <cstdint>
-#include <unordered_map>
+#include <string>
+
+
+#ifdef _MSC_VER
+    #define EXPORT __declspec(dllexport)
+#else   
+    #define EXPORT __attribute__((visibility("default")))
+#endif
 
 #define HOOK_DEF(ret, name, ...) \
     ret (*orig_##name)(__VA_ARGS__); \
@@ -8,6 +15,13 @@
 #define HOOK_SET(addr, name) \
     ModApi::Instance().Hook(addr, (void*)my_##name, (void **)&orig_##name)
 
+
+typedef struct ModInfo {
+    std::string name;
+    std::string authour;
+    std::string description;
+    std::string version;
+}ModInfo;
 
 class ModApi {
 public:

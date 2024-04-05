@@ -41,7 +41,7 @@ uintptr_t (*CheckpointBarn_m_ChangeLevel)(uintptr_t CheckpointBarn, uintptr_t Ga
 
 HOOK_DEF(uintptr_t, AvatarEnergy_Use, uintptr_t instance, unsigned int EnergyRule, float energy) {
 
-	CheckpointBarn_m_ChangeLevel(NULL, Game, "CandleSpaceEnd");
+	CheckpointBarn_m_ChangeLevel(NULL, gv::gamePtr, "CandleSpaceEnd");
 	return orig_AvatarEnergy_Use(instance, EnergyRule, -3.0);
 	//return EnergyRule;
 }

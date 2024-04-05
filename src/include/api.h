@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <string>
 
 #ifdef _MSC_VER
     #define MOD_API __declspec(dllexport)
@@ -13,6 +14,12 @@
 #define HOOK_SET(addr, name) \
     ModApi::Instance().Hook(addr, (void*)my_##name, (void **)&orig_##name)
 
+typedef struct ModInfo {
+    std::string name;
+    std::string authour;
+    std::string description;
+    std::string version;
+}ModInfo;
 
 class MOD_API ModApi {
 protected:
