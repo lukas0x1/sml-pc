@@ -29,10 +29,16 @@ void ModLoader::LoadMods() {
                 if (hModule != nullptr) {
                     mods.emplace_back(hModule);
                     ModItem & item = mods.back();
+                    item.start = (StartFn) GetProcAddress(hModule, "Start");
+                    item.onDisable = (OnDisableFn) GetProcAddress(hModule, "onDisable");
+                    item.onEnable = (OnEnableFn) GetProcAddress(hModule, "onEnable");
                     item.getInfo = (GetModInfoFn) GetProcAddress(hModule, "GetModInfo");
                     item.render = (RenderFn) GetProcAddress(hModule, "Render");
                     if(item.getInfo != NULL)
                         item.getInfo(item.info);
+                    if(item.start != NULL) {
+                        item.start();
+                    }
                 } else {
                     std::cout << "Failed to load DLL: " << filePath << std::endl;
                 }
@@ -50,22 +56,34 @@ const ModInfo& ModLoader::GetModInfo(int index) {
     return mods[index].info;
 }
 
-void ModLoader::CallModRender(int index) {
-    if(mods[index].render != nullptr)
+void ModLoader::Render(int index) {
+    if(mods[index].enabled && mods[index].render != nullptr)
         mods[index].render();
+}
+void ModLoader::EnableMod(int index) {
+    if(mods[index].onEnable != nullptr)
+        mods[index].onEnable();
+}
+
+void ModLoader::DisableMod(int index){
+    if(mods[index].onDisable != nullptr)
+        mods[index].onDisable();
+}
+
+bool& ModLoader::GetModEnabled(int index) {
+    return mods[index].enabled;
 }
 
 std::string ModLoader::toString(int index) {
     std::stringstream ss;
     
     ss << "Mod Info: " << "\n";
-    ss << "HMODULE: " << mods[index].hModule << "\n";
     ss << "Name: " << mods[index].info.name << "\n";
     ss << "Version: " << mods[index].info.version << "\n";
     ss << "Author: " << mods[index].info.author << "\n";
     ss << "Description: " << mods[index].info.description << "\n";
-    ss << "GetModInfo: " << mods[index].getInfo << "\n";
-    ss << "Render: " << mods[index].render << "\n";
+    // ss << "GetModInfo: " << mods[index].getInfo << "\n";
+    // ss << "Render: " << mods[index].render << "\n";
     return ss.str();
 }
 

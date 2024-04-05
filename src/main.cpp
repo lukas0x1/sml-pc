@@ -9,12 +9,8 @@
 #include "include/api.h"
 #include "include/vulkan_hooks.hpp"
 #include "include/menu.hpp"
-#include "include/global_variables.h"
 #include "include/mod_loader.h"
 
-namespace gv = GlobalVariables;
-
-uintptr_t Game = 0;
 
 HMODULE dllHandle = nullptr;
 
@@ -38,15 +34,13 @@ __declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
 }
 
 
-uintptr_t (*CheckpointBarn_m_ChangeLevel)(uintptr_t CheckpointBarn, uintptr_t Game, const char *level);
+// uintptr_t (*CheckpointBarn_m_ChangeLevel)(uintptr_t CheckpointBarn, uintptr_t Game, const char *level);
+// HOOK_DEF(uintptr_t, AvatarEnergy_Use, uintptr_t instance, unsigned int EnergyRule, float energy) {
 
-
-HOOK_DEF(uintptr_t, AvatarEnergy_Use, uintptr_t instance, unsigned int EnergyRule, float energy) {
-
-    CheckpointBarn_m_ChangeLevel(NULL, gv::gamePtr, "CandleSpaceEnd");
-    return orig_AvatarEnergy_Use(instance, EnergyRule, -3.0);
-    //return EnergyRule;
-}
+//     CheckpointBarn_m_ChangeLevel(NULL, gv::gamePtr, "CandleSpaceEnd");
+//     return orig_AvatarEnergy_Use(instance, EnergyRule, -3.0);
+//     //return EnergyRule;
+// }
 
 
 
@@ -92,12 +86,11 @@ void loadWrapper(){
 DWORD WINAPI DllThread(LPVOID lpParam){
     loadWrapper();
     ModApi::Instance().InitSkyBase();
-    gv::InitGlobalVariables(ModApi::Instance().GetSkyBase());
 
-    HOOK_SET(ModApi::Instance().GetSkyBase() + 0x13311C0, AvatarEnergy_Use);
+    //HOOK_SET(ModApi::Instance().GetSkyBase() + 0x13311C0, AvatarEnergy_Use);
     ModLoader::LoadMods();
     //uintptr_t CheckpointBarn = *(uintptr_t *)(gv::gamePtr + 0x1);
-    CheckpointBarn_m_ChangeLevel = (uintptr_t (*)(uintptr_t, uintptr_t, const char *))(ModApi::Instance().GetSkyBase() + 0x1188810);
+    //CheckpointBarn_m_ChangeLevel = (uintptr_t (*)(uintptr_t, uintptr_t, const char *))(ModApi::Instance().GetSkyBase() + 0x1188810);
 
     return EXIT_SUCCESS;
 }
