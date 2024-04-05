@@ -1,4 +1,5 @@
 build/*
 .vscode/*
 .cache/*
-lib/
+lib/release/libmem.lib
+lib/debug/libmem.lib
