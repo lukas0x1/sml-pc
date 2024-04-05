@@ -4,7 +4,7 @@ project(canvas VERSION 0.1.0 LANGUAGES CXX C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
-file(GLOB CPP_SRC *.cpp )
+file(GLOB CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp )
 
 add_library(
 	POWRPROF
@@ -28,6 +28,13 @@ endif()
 
 find_library(VULKAN_LIBRARY NAMES vulkan-1 vulkan PATHS $ENV{VULKAN_SDK}/Lib)
 find_path(VULKAN_INCLUDE_DIR NAMES vulkan/vulkan.h PATHS $ENV{VULKAN_SDK}/Include)
+
+
+include_directories(
+	include
+	include/imgui
+	include/libmem
+)
 
 target_compile_features(POWRPROF PRIVATE cxx_std_17)
 target_include_directories(POWRPROF PRIVATE ${VULKAN_INCLUDE_DIR})

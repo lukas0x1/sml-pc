@@ -1,13 +1,17 @@
 #include <windows.h>
 #include <stdio.h>
-#include "include/libmem/libmem.h"
 #include <vulkan/vulkan.h>
-#include "vulkan_hooks.hpp"
 #include <thread>
 #include <dxgi.h>
-#include "menu.hpp"
+#include <libmem.h>
 
-uintptr_t sky = NULL;
+#include "include/api.h"
+#include "include/vulkan_hooks.hpp"
+#include "include/menu.hpp"
+#include "include/global_variables.h"
+
+namespace gv = GlobalVariables;
+
 uintptr_t Game = 0;
 
 HMODULE dllHandle = nullptr;
@@ -35,13 +39,10 @@ __declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
 uintptr_t (*CheckpointBarn_m_ChangeLevel)(uintptr_t CheckpointBarn, uintptr_t Game, const char *level);
 
 
-uintptr_t (*o_AvatarEnergy_Use)(uintptr_t, unsigned int, float);
-uintptr_t h_AvatarEnergy_Use(uintptr_t instance, unsigned int EnergyRule, float energy){
-
+HOOK_DEF(uintptr_t, AvatarEnergy_Use, uintptr_t instance, unsigned int EnergyRule, float energy) {
 
 	CheckpointBarn_m_ChangeLevel(NULL, Game, "CandleSpaceEnd");
-
-	return o_AvatarEnergy_Use(instance, EnergyRule, -3.0);
+	return orig_AvatarEnergy_Use(instance, EnergyRule, -3.0);
 	//return EnergyRule;
 }
 
@@ -88,55 +89,13 @@ void loadWrapper(){
 
 DWORD WINAPI DllThread(LPVOID lpParam){
 	loadWrapper();
+	ModApi::Instance().InitSkyBase();
+    gv::InitGlobalVariables(ModApi::Instance().GetSkyBase());
 
+    HOOK_SET(ModApi::Instance().GetSkyBase() + 0x13311C0, AvatarEnergy_Use);
 
-	while (GetModuleHandle("Sky.exe") == 0)
-	{
-		Sleep(100);
-	}
-
-
-	
-	sky = (uintptr_t)LoadLibrary(TEXT("Sky.exe"));
-
-	LM_HookCode(sky + 0x13311C0, (lm_address_t)h_AvatarEnergy_Use, (lm_address_t *)&o_AvatarEnergy_Use);
-
-	
-	uintptr_t Account = 0;
-	while(Game == NULL){
-		Sleep(100);
-		Game = *(uintptr_t *)(sky + 0x23B2FB0);
-	}
-
-
-	uintptr_t CheckpointBarn = *(uintptr_t *)(Game + 0x1);
-	CheckpointBarn_m_ChangeLevel = (uintptr_t (*)(uintptr_t, uintptr_t, const char *))(sky + 0x1188810);
-
-	//*(uintptr_t *)(Game + 0xf64);
-	//int *AccountType = (int *)(*(uintptr_t *)(Game + 0xf64) + 0x1D8);
-
-	while(Account == NULL){
-		Sleep(100);
-		Account = *(uintptr_t *)(Game + 0x1D8);
-	}
-
-	int *AccountType = (int *)(Account + 0xf64);
-	*AccountType = 0;
-	while(*AccountType != 9){
-		Sleep(1000);
-	}
-
-	*AccountType = 0;
-	
-
-
-	
-	
-	
-	//Game = *(uintptr_t **)(sky + 0x23B2FB0);
-
-	//int *AccountType = (int *)(*(uintptr_t *)(Game + 0xf64) + 0x1D8);
-	//*AccountType = 0;
+	//uintptr_t CheckpointBarn = *(uintptr_t *)(gv::gamePtr + 0x1);
+	CheckpointBarn_m_ChangeLevel = (uintptr_t (*)(uintptr_t, uintptr_t, const char *))(ModApi::Instance().GetSkyBase() + 0x1188810);
 
 	return EXIT_SUCCESS;
 }
@@ -217,8 +176,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved){
         case DLL_PROCESS_ATTACH:
         	static HANDLE dllHandle = CreateThread(NULL, 0, DllThread, NULL, 0, NULL);
         	static HANDLE hook = CreateThread(NULL, 0, hook_thread, NULL, 0, NULL);
-        	AllocConsole();
-        	freopen("CONOUT$", "w", stdout);
+        	// AllocConsole();
+        	// freopen("CONOUT$", "w", stdout);
             break;
         case DLL_PROCESS_DETACH:
         
