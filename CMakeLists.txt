@@ -17,17 +17,43 @@ add_library(
 	include/imgui/imgui_impl_win32.cpp
 	include/imgui/imgui_tables.cpp
 	include/imgui/imgui_widgets.cpp
+    include/cpr/accept_encoding.cpp
+    include/cpr/async.cpp
+    include/cpr/auth.cpp
+    include/cpr/bearer.cpp
+    include/cpr/callback.cpp
+    include/cpr/cert_info.cpp
+    include/cpr/cookies.cpp
+    include/cpr/cprtypes.cpp
+    include/cpr/curl_container.cpp
+    include/cpr/curlholder.cpp
+    include/cpr/error.cpp
+    include/cpr/file.cpp
+    include/cpr/multipart.cpp
+    include/cpr/parameters.cpp
+    include/cpr/payload.cpp
+    include/cpr/proxies.cpp
+    include/cpr/proxyauth.cpp
+    include/cpr/session.cpp
+    include/cpr/threadpool.cpp
+    include/cpr/timeout.cpp
+    include/cpr/unix_socket.cpp
+    include/cpr/util.cpp
+    include/cpr/response.cpp
+    include/cpr/redirect.cpp
+    include/cpr/interceptor.cpp
+    include/cpr/ssl_ctx.cpp
+    include/cpr/curlmultiholder.cpp
+    include/cpr/multiperform.cpp
 	)
 
 
 
 set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libmem.lib)
-set(CPR_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/cpr.lib)
 set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib)
 set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/POWRPROF.lib)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd -D_ITERATOR_DEBUG_LEVEL=2")
-	set(CPR_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/cpr.lib)
 	set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/libcurl.lib)
 	set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/libmem.lib)
 	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/debug/POWRPROF.lib)
@@ -55,7 +81,6 @@ target_include_directories(POWRPROF PRIVATE ${VULKAN_INCLUDE_DIR})
 target_link_libraries(
 	POWRPROF
 	${LIBMEM_PATH}
-	${CPR_PATH}
 	${CURL_PATH}
 	${VULKAN_LIBRARY}
 )
