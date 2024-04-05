@@ -1,18 +1,15 @@
 cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
 
-
-
 project(canvas VERSION 0.1.0 LANGUAGES CXX C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
-set(VULKAN_SDK "C:/VulkanSDK/1.3.280.0")
+
+file(GLOB CPP_SRC *.cpp )
 
 add_library(
 	POWRPROF
 	SHARED
-	main.cpp
-	menu.cpp
-	vulkan_hooks.cpp
+	${CPP_SRC}
 	include/imgui/imgui.cpp
 	include/imgui/imgui_demo.cpp
 	include/imgui/imgui_draw.cpp
@@ -22,16 +19,21 @@ add_library(
 	include/imgui/imgui_widgets.cpp
 	)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd -D_ITERATOR_DEBUG_LEVEL=2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd -D_ITERATOR_DEBUG_LEVEL=0")
 
-find_library(VULKAN_LIBRARY NAMES vulkan-1 vulkan PATHS ${VULKAN_SDK}/Lib)
-find_path(VULKAN_INCLUDE_DIR NAMES vulkan/vulkan.h PATHS ${VULKAN_SDK}/Include)
+set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libmem.lib)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/libmem.lib)
+endif()
+
+find_library(VULKAN_LIBRARY NAMES vulkan-1 vulkan PATHS $ENV{VULKAN_SDK}/Lib)
+find_path(VULKAN_INCLUDE_DIR NAMES vulkan/vulkan.h PATHS $ENV{VULKAN_SDK}/Include)
 
 target_compile_features(POWRPROF PRIVATE cxx_std_17)
 target_include_directories(POWRPROF PRIVATE ${VULKAN_INCLUDE_DIR})
 
 target_link_libraries(
 	POWRPROF
-	${CMAKE_CURRENT_SOURCE_DIR}/lib/libmem.lib
+	${LIBMEM_PATH}
 	${VULKAN_LIBRARY}
 	)

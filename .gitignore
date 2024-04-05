@@ -1,3 +1,4 @@
-.gitignore
-lib/libmem.lib
-build
+build/*
+.vscode/*
+.cache/*
+lib/
