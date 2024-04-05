@@ -27,8 +27,8 @@ set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib)
 set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/POWRPROF.lib)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd -D_ITERATOR_DEBUG_LEVEL=2")
-	set(CPR_PATH ${CMAKE_CURRENT_SOURCE_DIR}/debug/release/cpr.lib)
-	set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/debug/release/libcurl.lib)
+	set(CPR_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/cpr.lib)
+	set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/libcurl.lib)
 	set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/libmem.lib)
 	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/debug/POWRPROF.lib)
 endif()
@@ -50,6 +50,7 @@ include_directories(
 target_compile_features(POWRPROF PRIVATE cxx_std_17)
 
 target_include_directories(POWRPROF PRIVATE ${VULKAN_INCLUDE_DIR})
+
 
 target_link_libraries(
 	POWRPROF

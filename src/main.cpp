@@ -5,7 +5,6 @@
 #include <dxgi.h>
 #include <libmem.h>
 #include <imgui.h>
-
 #include "include/api.h"
 #include "include/vulkan_hooks.hpp"
 #include "include/menu.hpp"
