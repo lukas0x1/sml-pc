@@ -1,32 +1,40 @@
 #include <filesystem>
+#include <iostream>
 
 #include "include/mod_loader.h"
 
+typedef void (*startFn)();
+typedef void (*getModinfoFn)(ModInfo& info);
 
 std::vector<ModItem> ModLoader::mods;
 
 void ModLoader::LoadMods() {
     
+    std::string directory = "mods"; // 
+    char buffer[MAX_PATH];
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    std::string::size_type pos = std::string(buffer).find_last_of("\\/");
+    if (pos != std::string::npos) {
+        directory = std::string(buffer).substr(0, pos) + "/" + directory;
+    }
+
     for (const auto& entry : std::filesystem::directory_iterator(directory)) {
-        if (entry.is_regular_file()) { // 判断是否是普通文件
+        if (entry.is_regular_file()) { // is regular file
             std::string filePath = entry.path().string();
             std::string fileExtension = entry.path().extension().string();
 
-            if (fileExtension == ".dll") { // 判断是否是DLL文件
-                HMODULE hModule = LoadLibraryA(filePath.c_str()); // 加载DLL文件
+            if (fileExtension == ".dll") { // is dll file
+                HMODULE hModule = LoadLibraryA(filePath.c_str()); // load dll
                 if (hModule != nullptr) {
-                    loadedModules.push_back(hModule); // 将加载的DLL模块句柄保存到向量中
+                    ModItem item;
+                    getModinfoFn getModinfo = (getModinfoFn)GetProcAddress(hModule, "GetModinfo");
+                    getModinfo(item.info);
+                    mods.push_back(std::move(item));
+
                 } else {
-                    std::cerr << "Failed to load DLL: " << filePath << std::endl;
+                    std::cout << "Failed to load DLL: " << filePath << std::endl;
                 }
             }
         }
-    }
-
-    // 在这里可以对加载的DLL进行其他操作，如查找并调用其中的函数等
-
-    // 可选：释放所有已加载的DLL模块句柄
-    for (HMODULE hModule : loadedModules) {
-        FreeLibrary(hModule);
     }
 }

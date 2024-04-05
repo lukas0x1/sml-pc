@@ -9,5 +9,9 @@ void EXPORT GetModInfo(ModInfo& info) {
 } 
 
 void EXPORT Start() {
-    
+
 } 
+
+void EXPORT DrawMenu() {
+    
+}

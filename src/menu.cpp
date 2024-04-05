@@ -32,6 +32,6 @@ namespace Menu {
         if (!bShowMenu)
             return;
         SMLMainMenu();
-        //ig::ShowDemoWindow( );
+        ig::ShowDemoWindow( );
     }
 } // namespace Menu
