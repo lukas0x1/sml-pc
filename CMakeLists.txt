@@ -80,6 +80,7 @@ target_include_directories(POWRPROF PRIVATE ${VULKAN_INCLUDE_DIR})
 
 target_link_libraries(
 	POWRPROF
+	ntdll
 	${LIBMEM_PATH}
 	${CURL_PATH}
 	${VULKAN_LIBRARY}

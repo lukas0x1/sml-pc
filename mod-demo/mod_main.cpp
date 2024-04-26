@@ -5,7 +5,7 @@
 #include "include/api.h"
 #include "include/mod_main.h"
 #include "include/global_variables.h"
-#include "include/cpr/cpr.h"
+
 
 namespace gv = GlobalVariables;
 
@@ -19,15 +19,7 @@ void GetModInfo(ModInfo& info) {
 
 
 void Start() {
-    gv::InitGlobalVariables(API.GetSkyBase());
 
-
-    cpr::Response r = cpr::Get(cpr::Url{"https://api.github.com/repos/whoshuu/cpr/contributors"},
-    cpr::Authentication{"user", "pass", cpr::AuthMode::BASIC},
-    cpr::Parameters{{"anon", "true"}, {"key", "value"}});
-    r.status_code;                  // 200
-    r.header["content-type"];       // application/json; charset=utf-8
-    r.text;                
 }
     
 void onEnable(){
