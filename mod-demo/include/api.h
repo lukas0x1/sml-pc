@@ -34,7 +34,11 @@ public:
     void InitSkyBase();
 
     uintptr_t GetSkyBase();
+    uintptr_t GetSkySize();
 
+    uintptr_t Scan(const char *signature);
+    uintptr_t Scan(const char *signature, uintptr_t start, size_t size);
+    
     void Hook(uintptr_t addr, void* newFn, void** oldFn);
 
     void UnHook(uintptr_t addr);

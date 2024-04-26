@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
@@ -27,6 +28,7 @@ class MOD_API ModApi {
 protected:
     static ModApi *instance;
     uintptr_t skyBase;
+    size_t skySize;
 
 public:
     static ModApi& Instance();
@@ -36,8 +38,14 @@ public:
     void InitSkyBase();
 
     uintptr_t GetSkyBase();
+    uintptr_t GetSkySize();
+
+    uintptr_t Scan(const char *signature);
+    uintptr_t Scan(const char *signature, uintptr_t start, size_t size);
 
     void Hook(uintptr_t addr, void* newFn, void** oldFn);
 
     void UnHook(uintptr_t addr);
+
+
 };

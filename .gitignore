@@ -3,3 +3,5 @@ build/*
 .cache/*
 lib/release/libmem.lib
 lib/debug/libmem.lib
+mod-demo/.cache
+mod-demo/build/*

@@ -26,13 +26,33 @@ ModApi::ModApi() {
 }
 
 void ModApi::InitSkyBase() {
-	while (GetModuleHandle("Sky.exe") == 0)Sleep(100);
+/*
+    while (GetModuleHandle("Sky.exe") == 0)Sleep(100);
 	skyBase = (uintptr_t)LoadLibrary(TEXT("Sky.exe"));
+*/
+    lm_module_t mod;
+    while(LM_FindModule("Sky.exe", &mod) == 0) Sleep(100);
+    skyBase = mod.base;
+    skySize = mod.size;
 }
 
 uintptr_t ModApi::GetSkyBase() {
 	return skyBase;
 }
+
+uintptr_t ModApi::GetSkySize() {
+    return skySize;
+}
+
+uintptr_t ModApi::Scan(const char *signature){
+    return LM_SigScan(signature, skyBase, skySize);
+}
+
+uintptr_t ModApi::Scan(const char *signature, uintptr_t start, size_t size){
+    return LM_SigScan(signature, start, size);
+}
+
+
 
 void ModApi::Hook(uintptr_t addr, void* newFn, void** oldFn) {
     //todo: check if already hooked，Multiple modification hooks for the same function
