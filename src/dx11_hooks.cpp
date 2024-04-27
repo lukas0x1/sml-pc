@@ -230,7 +230,7 @@ namespace DX11 {
                     printf("failed to find present_hk");
                     return;
                 }
-                static lm_size_t presentStatus = LM_HookCode(mod.base + 0x8BB00, reinterpret_cast<lm_address_t>(&hkPresent), reinterpret_cast<lm_address_t *>(&oPresent));
+                static lm_size_t presentStatus = LM_HookCode(present_hk_sig, reinterpret_cast<lm_address_t>(&hkPresent), reinterpret_cast<lm_address_t *>(&oPresent));
             }
 
             else{
