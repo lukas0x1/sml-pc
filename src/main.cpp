@@ -7,6 +7,8 @@
 #include <imgui.h>
 #include "include/api.h"
 #include "include/vulkan_hooks.hpp"
+#include "include/opengl_hooks.hpp"
+#include "include/dx11_hooks.hpp"
 #include "include/menu.hpp"
 #include "include/mod_loader.h"
 
@@ -155,8 +157,9 @@ static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 DWORD WINAPI hook_thread(PVOID lParam){
     HWND window = GetProcessWindow();
-    VK::Hook(window);
-
+    //VK::Hook(window);
+    //GL::Hook(window);
+    DX11::Hook(window);
 
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     return EXIT_SUCCESS;
@@ -171,8 +174,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved){
         case DLL_PROCESS_ATTACH:
             static HANDLE dllHandle = CreateThread(NULL, 0, DllThread, NULL, 0, NULL);
             static HANDLE hook = CreateThread(NULL, 0, hook_thread, NULL, 0, NULL);
-            // AllocConsole();
-            // freopen("CONOUT$", "w", stdout);
+            AllocConsole();
+            freopen("CONOUT$", "w", stdout);
             break;
         case DLL_PROCESS_DETACH:
         
