@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 
+#include <cstdio>
 #include <d3d11.h>
 #include <dxgi1_2.h>
 
@@ -81,6 +82,8 @@ static std::add_pointer_t<HRESULT WINAPI(IDXGISwapChain*, UINT, UINT)> oPresent;
 static HRESULT WINAPI hkPresent(IDXGISwapChain* pSwapChain,
                                 UINT SyncInterval,
                                 UINT Flags) {
+
+
     RenderImGui_DX11(pSwapChain);
 
     return oPresent(pSwapChain, SyncInterval, Flags);
@@ -219,13 +222,28 @@ namespace DX11 {
 
             CleanupDeviceD3D11( );
 
+
+            lm_module_t mod;
+            if(LM_FindModule("gameoverlayrenderer64.dll", &mod)){
+                lm_address_t present_hk_sig = LM_SigScan("48 89 6C 24 18 48 89 74 24 20 41 56 48 83 EC ? 41 8B E8", mod.base, mod.size);      
+                if(!present_hk_sig){
+                    printf("failed to find present_hk");
+                    return;
+                }
+                static lm_size_t presentStatus = LM_HookCode(mod.base + 0x8BB00, reinterpret_cast<lm_address_t>(&hkPresent), reinterpret_cast<lm_address_t *>(&oPresent));
+            }
+
+            else{
+                static lm_size_t presentStatus = LM_HookCode(reinterpret_cast<lm_address_t>(fnPresent), reinterpret_cast<lm_address_t>(&hkPresent), reinterpret_cast<lm_address_t *>(&oPresent));
+                static lm_size_t present1Status = LM_HookCode(reinterpret_cast<lm_address_t>(fnPresent1), reinterpret_cast<lm_address_t>(&hkPresent1), reinterpret_cast<lm_address_t *>(&oPresent1));
+            }
+
             static lm_size_t cscStatus = LM_HookCode(reinterpret_cast<lm_address_t>(fnCreateSwapChain), reinterpret_cast<lm_address_t>(&hkCreateSwapChain), reinterpret_cast<lm_address_t *>(&oCreateSwapChain));
             static lm_size_t cschStatus = LM_HookCode(reinterpret_cast<lm_address_t>(fnCreateSwapChainForHwndChain), reinterpret_cast<lm_address_t>(&hkCreateSwapChainForHwnd), reinterpret_cast<lm_address_t *>(&oCreateSwapChainForHwnd));
             static lm_size_t csccwStatus = LM_HookCode(reinterpret_cast<lm_address_t>(fnCreateSwapChainForCWindowChain), reinterpret_cast<lm_address_t>(&hkCreateSwapChainForCoreWindow), reinterpret_cast<lm_address_t *>(&oCreateSwapChainForCoreWindow));
             static lm_size_t csccStatus = LM_HookCode(reinterpret_cast<lm_address_t>(fnCreateSwapChainForCompChain), reinterpret_cast<lm_address_t>(&hkCreateSwapChainForComposition), reinterpret_cast<lm_address_t *>(&oCreateSwapChainForComposition));
 
-            static lm_size_t presentStatus = LM_HookCode(reinterpret_cast<lm_address_t>(fnPresent), reinterpret_cast<lm_address_t>(&hkPresent), reinterpret_cast<lm_address_t *>(&oPresent));
-            static lm_size_t present1Status = LM_HookCode(reinterpret_cast<lm_address_t>(fnPresent1), reinterpret_cast<lm_address_t>(&hkPresent1), reinterpret_cast<lm_address_t *>(&oPresent1));
+            
 
             static lm_size_t resizeStatus = LM_HookCode(reinterpret_cast<lm_address_t>(fnResizeBuffers), reinterpret_cast<lm_address_t>(&hkResizeBuffers), reinterpret_cast<lm_address_t *>(&oResizeBuffers));
             static lm_size_t resize1Status = LM_HookCode(reinterpret_cast<lm_address_t>(fnResizeBuffers1), reinterpret_cast<lm_address_t>(&hkResizeBuffers1), reinterpret_cast<lm_address_t *>(&oResizeBuffers1));
