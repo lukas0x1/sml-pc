@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <windows.h>
 #include <stdio.h>
 #include <vulkan/vulkan.h>
@@ -5,6 +6,7 @@
 #include <dxgi.h>
 #include <libmem.h>
 #include <imgui.h>
+#include <xlocale>
 #include "include/api.h"
 #include "include/dx12_hooks.hpp"
 #include "include/vulkan_hooks.hpp"
@@ -12,6 +14,7 @@
 #include "include/dx11_hooks.hpp"
 #include "include/menu.hpp"
 #include "include/mod_loader.h"
+#include <tlhelp32.h>
 
 
 HMODULE dllHandle = nullptr;
@@ -94,6 +97,7 @@ DWORD WINAPI DllThread(LPVOID lpParam){
     //uintptr_t CheckpointBarn = *(uintptr_t *)(gv::gamePtr + 0x1);
     //CheckpointBarn_m_ChangeLevel = (uintptr_t (*)(uintptr_t, uintptr_t, const char *))(ModApi::Instance().GetSkyBase() + 0x1188810);
 
+
     return EXIT_SUCCESS;
 }
 
@@ -121,7 +125,7 @@ HWND GetProcessWindow( ) {
 
     while (!hwnd) {
         EnumWindows(::EnumWindowsCallback, reinterpret_cast<LPARAM>(&hwnd));
-        printf("[!] Waiting for window to appear.\n");
+        //printf("[!] Waiting for window to appear.\n");
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 
@@ -154,33 +158,175 @@ static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
     return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
+void InitConsole(){
+    
+    AllocConsole();
+
+    if (IsValidCodePage(CP_UTF8)) {
+        SetConsoleCP(CP_UTF8);
+        SetConsoleOutputCP(CP_UTF8);
+    }
+
+    auto hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleMode(hStdout, ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    // Disable Ctrl+C handling
+    SetConsoleCtrlHandler(NULL, TRUE);
+
+    CONSOLE_FONT_INFOEX cfi;
+    cfi.cbSize = sizeof(cfi);
+    GetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
+
+    // Change to a more readable font if user has one of the default eyesore fonts
+    if (wcscmp(cfi.FaceName, L"Terminal") == 0 || wcscmp(cfi.FaceName, L"Courier New") || (cfi.FontFamily & TMPF_VECTOR) == 0) {
+        cfi.cbSize = sizeof(cfi);
+        cfi.nFont = 0;
+        cfi.dwFontSize.X = 0;
+        cfi.dwFontSize.Y = 14;
+        cfi.FontFamily = FF_MODERN | TMPF_VECTOR | TMPF_TRUETYPE;
+        cfi.FontWeight = FW_NORMAL;
+        wcscpy_s(cfi.FaceName, L"Lucida Console");
+        SetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
+    }
+
+    FILE * outputStream;
+    freopen_s(&outputStream, "CONOUT$", "w", stdout);
+    FILE* inputStream;
+    freopen_s(&inputStream, "CONIN$", "r", stdin);
+}
+
+void terminateCrashpadHandler() {
+
+    PROCESSENTRY32 entry;
+
+    entry.dwSize = sizeof(PROCESSENTRY32);
+
+
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
+
+    if (Process32First(snapshot, &entry) == TRUE) {
+
+        while (Process32Next(snapshot, &entry) == TRUE) {
+
+            if (lstrcmp(entry.szExeFile, "crashpad_handler.exe") == 0) {
+
+                HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID);
+
+                if (hProcess!= NULL) {
+
+                    TerminateProcess(hProcess, 0);
+
+                    CloseHandle(hProcess);
+
+                }
+
+            }
+
+        }
+
+    }
+
+    CloseHandle(snapshot);
+
+}
+
+
+
 
 
 DWORD WINAPI hook_thread(PVOID lParam){
+    int render = *(static_cast<int*>(lParam));
+    printf("renderer: %d\n", render);
     HWND window = GetProcessWindow();
-   
 
-    //VK::Hook(window);
-    //GL::Hook(window);
-    DX12::Hook(window);
-    //DX11::Hook(window);
-   
-
+    switch(render){
+        case 0:
+            VK::Hook(window);
+            break;
+        case 1:
+            GL::Hook(window);
+            break;    
+        case 2:
+            DX11::Hook(window);
+            break;
+        case 3:
+            DX12::Hook(window);
+            break;    
+        default:
+            printf("Invalid renderer: %d", render);
+            return EXIT_FAILURE;    
+    }
+    
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     return EXIT_SUCCESS;
 }
 
+int *getInput(){
+  
+    char buf[1080];
+    static int *renderer = new int();
+  /*
+    printf("Play with mods? y/n\n");
+    scanf_s("%s", buf, (unsigned int)sizeof(buf));
+    if(buf != "n" ||  buf != "y"){
+        printf("Invalid input. Restarting...\n");
+        getInput();
+    }
+
+    if (buf == "n"){
+        printf("Vanilla run selected. Exiting...\n");
+        *renderer = -1;
+        return renderer;  
+    }
+*/
+
+
+    printf("Choose a renderer:\n"
+
+       "0. Vulkan\n"
+
+       "1. OpenGL\n"
+
+       "2. DirectX 11\n"
+
+       "3. DirectX 12\n"
+
+       "Enter your choice: ");
+
+    scanf_s("%d", renderer);
+   
+    if (*renderer < 0 || *renderer > 3) {
+
+        printf("Invalid input. Restarting...\n");
+        getInput();
+
+    }
+
+    return renderer;
+}
+
+void onAttach(){
+
+
+
+    terminateCrashpadHandler();
+    InitConsole();
+
+    int *renderer = getInput();
+    if(*renderer == -1) return;
+    static HANDLE dllHandle = CreateThread(NULL, 0, DllThread, NULL, 0, NULL);
+    static HANDLE hook = CreateThread(NULL, 0, hook_thread, (void *)renderer, 0, NULL);
+}
+
+
+
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved){
-
+    DisableThreadLibraryCalls(hinstDLL);
 
     switch (fdwReason) {
-        DisableThreadLibraryCalls(hinstDLL);
         case DLL_PROCESS_ATTACH:
-            static HANDLE dllHandle = CreateThread(NULL, 0, DllThread, NULL, 0, NULL);
-            static HANDLE hook = CreateThread(NULL, 0, hook_thread, NULL, 0, NULL);
-            AllocConsole();
-            freopen("CONOUT$", "w", stdout);
+            onAttach();
+
             break;
         case DLL_PROCESS_DETACH:
         
