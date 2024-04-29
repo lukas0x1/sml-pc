@@ -16,6 +16,7 @@ add_library(
 	include/imgui/imgui_impl_vulkan.cpp
 	include/imgui/imgui_impl_win32.cpp
 	include/imgui/imgui_impl_dx11.cpp
+	include/imgui/imgui_impl_dx12.cpp
 	include/imgui/imgui_impl_opengl3.cpp
 	include/imgui/imgui_tables.cpp
 	include/imgui/imgui_widgets.cpp

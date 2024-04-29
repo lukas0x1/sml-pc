@@ -176,7 +176,7 @@ namespace DX11 {
 
         
 
-        if (!CreateDeviceD3D11(hwnd)) {
+        if (!CreateDeviceD3D11(GetConsoleWindow())) {
             printf("[!] CreateDeviceD3D11() failed.\n");
             return;
         }
