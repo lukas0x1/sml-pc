@@ -1,3 +1,4 @@
+#include "vulkan/vulkan_core.h"
 #include <Windows.h>
 
 #include <cstdio>
@@ -278,7 +279,8 @@ static VkResult VKAPI_CALL hkAcquireNextImageKHR(VkDevice device,
                                                  uint32_t* pImageIndex) {
     g_Device = device;
 
-    return oAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, pImageIndex);
+    //return oAcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, pImageIndex);
+    return VK_SUCCESS;
 }
 
 static std::add_pointer_t<VkResult VKAPI_CALL(VkDevice, const VkAcquireNextImageInfoKHR*, uint32_t*)> oAcquireNextImage2KHR;
