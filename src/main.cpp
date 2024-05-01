@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include <windows.h>
 #include <stdio.h>
 #include <vulkan/vulkan.h>
@@ -48,6 +47,41 @@ __declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
 // }
 
 
+void InitConsole(){
+    
+    AllocConsole();
+
+    if (IsValidCodePage(CP_UTF8)) {
+        SetConsoleCP(CP_UTF8);
+        SetConsoleOutputCP(CP_UTF8);
+    }
+
+    auto hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleMode(hStdout, ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+    // Disable Ctrl+C handling
+    SetConsoleCtrlHandler(NULL, TRUE);
+
+    CONSOLE_FONT_INFOEX cfi;
+    cfi.cbSize = sizeof(cfi);
+    GetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
+
+    // Change to a more readable font if user has one of the default eyesore fonts
+    if (wcscmp(cfi.FaceName, L"Terminal") == 0 || wcscmp(cfi.FaceName, L"Courier New") || (cfi.FontFamily & TMPF_VECTOR) == 0) {
+        cfi.cbSize = sizeof(cfi);
+        cfi.nFont = 0;
+        cfi.dwFontSize.X = 0;
+        cfi.dwFontSize.Y = 14;
+        cfi.FontFamily = FF_MODERN | TMPF_VECTOR | TMPF_TRUETYPE;
+        cfi.FontWeight = FW_NORMAL;
+        wcscpy_s(cfi.FaceName, L"Lucida Console");
+        SetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
+    }
+
+    FILE * outputStream;
+    freopen_s(&outputStream, "CONOUT$", "w", stdout);
+    FILE* inputStream;
+    freopen_s(&inputStream, "CONIN$", "r", stdin);
+}
 
 
 void loadWrapper(){
@@ -89,6 +123,7 @@ void loadWrapper(){
 
 
 DWORD WINAPI DllThread(LPVOID lpParam){
+	InitConsole();
     loadWrapper();
     ModApi::Instance().InitSkyBase();
 
@@ -158,41 +193,7 @@ static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
     return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
 
-void InitConsole(){
-    
-    AllocConsole();
 
-    if (IsValidCodePage(CP_UTF8)) {
-        SetConsoleCP(CP_UTF8);
-        SetConsoleOutputCP(CP_UTF8);
-    }
-
-    auto hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleMode(hStdout, ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-    // Disable Ctrl+C handling
-    SetConsoleCtrlHandler(NULL, TRUE);
-
-    CONSOLE_FONT_INFOEX cfi;
-    cfi.cbSize = sizeof(cfi);
-    GetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
-
-    // Change to a more readable font if user has one of the default eyesore fonts
-    if (wcscmp(cfi.FaceName, L"Terminal") == 0 || wcscmp(cfi.FaceName, L"Courier New") || (cfi.FontFamily & TMPF_VECTOR) == 0) {
-        cfi.cbSize = sizeof(cfi);
-        cfi.nFont = 0;
-        cfi.dwFontSize.X = 0;
-        cfi.dwFontSize.Y = 14;
-        cfi.FontFamily = FF_MODERN | TMPF_VECTOR | TMPF_TRUETYPE;
-        cfi.FontWeight = FW_NORMAL;
-        wcscpy_s(cfi.FaceName, L"Lucida Console");
-        SetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
-    }
-
-    FILE * outputStream;
-    freopen_s(&outputStream, "CONOUT$", "w", stdout);
-    FILE* inputStream;
-    freopen_s(&inputStream, "CONIN$", "r", stdin);
-}
 
 void terminateCrashpadHandler() {
 
@@ -312,6 +313,8 @@ void onAttach(){
     InitConsole();
 
     int *renderer = getInput();
+    FreeConsole();
+
     if(*renderer == -1) return;
     static HANDLE dllHandle = CreateThread(NULL, 0, DllThread, NULL, 0, NULL);
     static HANDLE hook = CreateThread(NULL, 0, hook_thread, (void *)renderer, 0, NULL);
