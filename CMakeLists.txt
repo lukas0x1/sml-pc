@@ -7,7 +7,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 file(GLOB CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp )
 
 add_library(
-	POWRPROF
+	powrprof
 	SHARED
 	${CPP_SRC}
 	include/imgui/imgui.cpp
@@ -54,12 +54,12 @@ add_library(
 
 set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libmem.lib)
 set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib)
-set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/POWRPROF.lib)
+set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/powrprof.lib)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd -D_ITERATOR_DEBUG_LEVEL=2")
 	set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/libcurl.lib)
 	set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/libmem.lib)
-	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/debug/POWRPROF.lib)
+	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/debug/powrprof.lib)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -76,13 +76,13 @@ include_directories(
 	include/libmem
 )
 
-target_compile_features(POWRPROF PRIVATE cxx_std_17)
+target_compile_features(powrprof PRIVATE cxx_std_17)
 
-target_include_directories(POWRPROF PRIVATE ${VULKAN_INCLUDE_DIR})
+target_include_directories(powrprof PRIVATE ${VULKAN_INCLUDE_DIR})
 
 
 target_link_libraries(
-	POWRPROF
+	powrprof
 	ntdll
 	${LIBMEM_PATH}
 	${CURL_PATH}
@@ -91,8 +91,8 @@ target_link_libraries(
 
 
 add_custom_command(
-	TARGET POWRPROF POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_LINKER_FILE:POWRPROF> ${COPY_TO}
+	TARGET powrprof POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_LINKER_FILE:powrprof> ${COPY_TO}
 )
 
 add_custom_target(BeforeBuild DEPENDS ${COPY_TO})

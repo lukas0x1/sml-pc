@@ -11,6 +11,7 @@
 #include "include/vulkan_hooks.hpp"
 #include "include/opengl_hooks.hpp"
 #include "include/dx11_hooks.hpp"
+#include "include/layer.h"
 #include "include/menu.hpp"
 #include "include/mod_loader.h"
 #include <tlhelp32.h>
@@ -233,25 +234,40 @@ void terminateCrashpadHandler() {
 
 
 
-
 DWORD WINAPI hook_thread(PVOID lParam){
     int render = *(static_cast<int*>(lParam));
     printf("renderer: %d\n", render);
-    HWND window = GetProcessWindow();
+    HWND window = nullptr;
 
     switch(render){
         case 0:
+        	window = GetProcessWindow();
             VK::Hook(window);
             break;
         case 1:
+        	window = GetProcessWindow();
             GL::Hook(window);
             break;    
         case 2:
+        	window = GetProcessWindow();
             DX11::Hook(window);
             break;
         case 3:
+        	window = GetProcessWindow();
             DX12::Hook(window);
-            break;    
+            break;
+        case 4:
+        	{
+        		WCHAR path[MAX_PATH];
+            	GetModuleFileNameW(NULL, path, MAX_PATH);
+            	std::wstring ws(path);
+            	std::string _path(ws.begin(), ws.end());
+           		SetEnvironmentVariable("VK_ADD_LAYER_PATH", _path.substr(0, _path.find_last_of("\\/")).c_str());
+            	SetEnvironmentVariable("VK_LOADER_LAYERS_ENABLE", "VkLayer_lukas_sml,*validation");
+        		window = GetProcessWindow();
+        		layer::setup(window);
+        	}
+        	break;        
         default:
             printf("Invalid renderer: %d", render);
             return EXIT_FAILURE;    
@@ -265,42 +281,22 @@ int *getInput(){
   
     char buf[1080];
     static int *renderer = new int();
-  /*
-    printf("Play with mods? y/n\n");
-    scanf_s("%s", buf, (unsigned int)sizeof(buf));
-    if(buf != "n" ||  buf != "y"){
-        printf("Invalid input. Restarting...\n");
-        getInput();
-    }
+ 
+    printf("Choose a graphics api:\n"
 
-    if (buf == "n"){
-        printf("Vanilla run selected. Exiting...\n");
-        *renderer = -1;
-        return renderer;  
-    }
-*/
+       "0: Vulkan\n"
 
+       "1: OpenGL\n"
 
-    printf("Choose a renderer:\n"
+       "2: DirectX 11\n"
 
-       "0. Vulkan\n"
+       "3: DirectX 12\n"
 
-       "1. OpenGL\n"
-
-       "2. DirectX 11\n"
-
-       "3. DirectX 12\n"
+       "4: Vulkan Layer\n"
 
        "Enter your choice: ");
 
     scanf_s("%d", renderer);
-   
-    if (*renderer < 0 || *renderer > 3) {
-
-        printf("Invalid input. Restarting...\n");
-        getInput();
-
-    }
 
     return renderer;
 }

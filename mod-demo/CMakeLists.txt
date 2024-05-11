@@ -13,10 +13,10 @@ add_library(
 )
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS "True")
-set(POWRPROF_PATH ${CMAKE_CURRENT_SOURCE_DIR}/powrprof/release/POWRPROF.lib)
+set(POWRPROF_PATH ${CMAKE_CURRENT_SOURCE_DIR}/powrprof/release/powrprof.lib)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd -D_ITERATOR_DEBUG_LEVEL=2")
-	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/powrprof/debug/POWRPROF.lib)
+	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/powrprof/debug/powrprof.lib)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
