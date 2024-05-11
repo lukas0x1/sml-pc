@@ -50,6 +50,7 @@ struct InstanceData {
    VkInstance instance;
 };
 
+
 struct QueueData;
 struct DeviceData {
    struct InstanceData *instance;
@@ -58,7 +59,7 @@ struct DeviceData {
 
    VkLayerDispatchTable vtable;
    VkDevice device;
-
+   QueueData *graphic_queue;
    std::vector<QueueData*> queues;
 };
 
@@ -66,6 +67,8 @@ struct QueueData {
   DeviceData *device;
   VkQueue queue;
 };
+
+
 
 std::map<void *, DeviceData> g_device_dispatch;
 std::map<void *, QueueData> g_queue_data;
@@ -99,7 +102,7 @@ static QueueData *new_queue_data(VkQueue queue, DeviceData *device_data)
   QueueData *data = GetQueueData(queue);
   data->device = device_data;
   data->queue = queue;
-
+  device_data->graphic_queue = data;
   return data;
 }
 
@@ -156,7 +159,7 @@ static VkExtent2D g_ImageExtent = { };
 
 static void CleanupDeviceVulkan( );
 static void CleanupRenderTarget( );
-static void RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPresentInfo);
+static VkResult RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPresentInfo);
 static bool DoesQueueSupportGraphic(VkQueue queue, VkQueue* pGraphicQueue);
 
 static bool CreateDeviceVK( ) {
@@ -272,6 +275,7 @@ static void CreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain) {
             info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
             info.commandBufferCount = 1;
 
+
             vkAllocateCommandBuffers(device, &info, &fd->CommandBuffer);
         }
         {
@@ -297,7 +301,7 @@ static void CreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain) {
         attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attachment.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         VkAttachmentReference color_attachment = { };
@@ -349,7 +353,14 @@ static void CreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain) {
         info.attachmentCount = 1;
         info.pAttachments = attachment;
         info.layers = 1;
-
+        if(g_ImageExtent.width == 0 || g_ImageExtent.height == 0){
+            info.width = 3840;
+            info.height = 2160;
+        }
+        else{
+            info.width = g_ImageExtent.width;
+            info.height = g_ImageExtent.height;
+        }
         for (uint32_t i = 0; i < uImageCount; ++i) {
             ImGui_ImplVulkanH_Frame* fd = &g_Frames[i];
             attachment[0] = fd->BackbufferView;
@@ -514,10 +525,9 @@ VK_LAYER_EXPORT void VKAPI_CALL ModLoader_DestroyDevice(VkDevice device, const V
 
 
 VK_LAYER_EXPORT VkResult VKAPI_CALL ModLoader_QueuePresentKHR(VkQueue queue, const VkPresentInfoKHR *pPresentInfo){
-
-  RenderImGui_Vulkan(queue, pPresentInfo);
-
-  return device_dispatch[GetKey(queue)].QueuePresentKHR(queue, pPresentInfo);
+  if(!g_Hwnd) return device_dispatch[GetKey(queue)].QueuePresentKHR(queue, pPresentInfo);
+  
+  return RenderImGui_Vulkan(queue, pPresentInfo);
 }
 
 
@@ -639,10 +649,11 @@ static void CleanupDeviceVulkan( ) {
     g_Device = NULL;
 }
 
-static void RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPresentInfo) {
-    if(!g_Hwnd) return;
-
+static VkResult RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPresentInfo) {
+    
+    
     QueueData *queue_data = GetQueueData(queue);
+    /*
     if(!queue){
       printf("queue is null\n");
       return;
@@ -652,11 +663,12 @@ static void RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPresentIn
       printf("device is null");
       
     }
+    */
   
     g_Device = queue_data->device->device;
 
-    
-    VkQueue graphicQueue = VK_NULL_HANDLE;
+    VkResult result = VK_SUCCESS;
+    VkQueue graphicQueue = queue_data->device->graphic_queue->queue;
     const bool queueSupportsGraphic = DoesQueueSupportGraphic(queue, &graphicQueue);
     Menu::InitializeContext(g_Hwnd);
 
@@ -665,9 +677,9 @@ static void RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPresentIn
         if (g_Frames[0].Framebuffer == VK_NULL_HANDLE) {
             CreateRenderTarget(g_Device, swapchain);
         }
-
-        ImGui_ImplVulkanH_Frame* fd = &g_Frames[pPresentInfo->pImageIndices[i]];
-        ImGui_ImplVulkanH_FrameSemaphores* fsd = &g_FrameSemaphores[pPresentInfo->pImageIndices[i]];
+        uint32_t image_index = pPresentInfo->pImageIndices[i];
+        ImGui_ImplVulkanH_Frame* fd = &g_Frames[image_index];
+        ImGui_ImplVulkanH_FrameSemaphores* fsd = &g_FrameSemaphores[image_index];
         {
             vkWaitForFences(g_Device, 1, &fd->Fence, VK_TRUE, ~0ull);
             vkResetFences(g_Device, 1, &fd->Fence);
@@ -759,6 +771,7 @@ static void RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPresentIn
                 info.signalSemaphoreCount = 1;
                 info.pSignalSemaphores = &fsd->ImageAcquiredSemaphore;
 
+
                 vkQueueSubmit(graphicQueue, 1, &info, fd->Fence);
             }
         } else {
@@ -775,10 +788,24 @@ static void RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPresentIn
 
             info.signalSemaphoreCount = 1;
             info.pSignalSemaphores = &fsd->ImageAcquiredSemaphore;
-
             vkQueueSubmit(graphicQueue, 1, &info, fd->Fence);
+
+            VkPresentInfoKHR present_info = *pPresentInfo;
+            present_info.swapchainCount = 1;
+            present_info.pSwapchains = &swapchain;
+            present_info.pImageIndices = &image_index;
+            present_info.pWaitSemaphores = &fsd->ImageAcquiredSemaphore;
+            present_info.waitSemaphoreCount = 1;
+
+            VkResult chain_result = queue_data->device->vtable.QueuePresentKHR(queue, &present_info);
+            //pPresentInfo->pWaitSemaphores = &fsd->ImageAcquiredSemaphore;
+            if (pPresentInfo->pResults)
+                pPresentInfo->pResults[i] = chain_result;
+            if (chain_result != VK_SUCCESS && result == VK_SUCCESS)
+                result = chain_result;
         }
     }
+    return result;
 }
 
 static bool DoesQueueSupportGraphic(VkQueue queue, VkQueue* pGraphicQueue) {
