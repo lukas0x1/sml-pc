@@ -54,21 +54,27 @@ uintptr_t ModApi::Scan(const char *signature, uintptr_t start, size_t size){
 
 
 
-void ModApi::Hook(uintptr_t addr, void* newFn, void** oldFn) {
+bool ModApi::Hook(uintptr_t addr, void* newFn, void** oldFn) {
     //todo: check if already hooked，Multiple modification hooks for the same function
     HookDef hook;
     hook.addr = addr;
     hook.newFn = newFn;
     hook.oldFn = oldFn;
     hook.size = LM_HookCode(addr, (lm_address_t)newFn, (lm_address_t*)oldFn);
+    if(!hook.size)
+        return false;
     hooks[addr] = hook;
+    return true;
 }
 
-void ModApi::UnHook(uintptr_t addr) {
+bool ModApi::UnHook(uintptr_t addr) {
     //todo:
     auto it = hooks.begin();
 	if ((it = hooks.find(addr)) != hooks.end()) {
-        if(LM_UnhookCode(addr, (lm_address_t )*(it->second.oldFn), it->second.size))
+        if(LM_UnhookCode(addr, (lm_address_t )*(it->second.oldFn), it->second.size)){
             hooks.erase(addr);
+            return true;
+        }
     }
+    return false;
 }
