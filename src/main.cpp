@@ -1,3 +1,4 @@
+#include <chrono>
 #include <windows.h>
 #include <stdio.h>
 #include <vulkan/vulkan.h>
@@ -5,12 +6,11 @@
 #include <dxgi.h>
 #include <libmem.h>
 #include <imgui.h>
+#include <winuser.h>
 #include <xlocale>
 #include "include/api.h"
-#include "include/dx12_hooks.hpp"
-#include "include/vulkan_hooks.hpp"
-#include "include/opengl_hooks.hpp"
-#include "include/dx11_hooks.hpp"
+
+
 #include "include/layer.h"
 #include "include/menu.hpp"
 #include "include/mod_loader.h"
@@ -39,18 +39,9 @@ __declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
 }
 
 
-// uintptr_t (*CheckpointBarn_m_ChangeLevel)(uintptr_t CheckpointBarn, uintptr_t Game, const char *level);
-// HOOK_DEF(uintptr_t, AvatarEnergy_Use, uintptr_t instance, unsigned int EnergyRule, float energy) {
-
-//     CheckpointBarn_m_ChangeLevel(NULL, gv::gamePtr, "CandleSpaceEnd");
-//     return orig_AvatarEnergy_Use(instance, EnergyRule, -3.0);
-//     //return EnergyRule;
-// }
-
-
 void InitConsole(){
-    
     AllocConsole();
+    SetConsoleTitle("sml console");
 
     if (IsValidCodePage(CP_UTF8)) {
         SetConsoleCP(CP_UTF8);
@@ -83,6 +74,7 @@ void InitConsole(){
     FILE* inputStream;
     freopen_s(&inputStream, "CONIN$", "r", stdin);
 }
+
 
 
 void loadWrapper(){
@@ -139,38 +131,6 @@ DWORD WINAPI DllThread(LPVOID lpParam){
 
 
 
-static BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam) {
-    const auto isMainWindow = [ handle ]( ) {
-        return GetWindow(handle, GW_OWNER) == nullptr && IsWindowVisible(handle);
-    };
-
-    DWORD pID = 0;
-    GetWindowThreadProcessId(handle, &pID);
-
-    if (GetCurrentProcessId( ) != pID || !isMainWindow( ) || handle == GetConsoleWindow( ))
-        return TRUE;
-
-    *reinterpret_cast<HWND*>(lParam) = handle;
-
-    return FALSE;
-}
-
-HWND GetProcessWindow( ) {
-    HWND hwnd = nullptr;
-    EnumWindows(::EnumWindowsCallback, reinterpret_cast<LPARAM>(&hwnd));
-
-    while (!hwnd) {
-        EnumWindows(::EnumWindowsCallback, reinterpret_cast<LPARAM>(&hwnd));
-        //printf("[!] Waiting for window to appear.\n");
-        std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    }
-
-    char name[128];
-    GetWindowTextA(hwnd, name, RTL_NUMBER_OF(name));
-    printf("[+] Got window with name: '%s'\n", name);
-
-    return hwnd;
-}
 
 static WNDPROC oWndProc;
 static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -199,121 +159,52 @@ static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 void terminateCrashpadHandler() {
 
     PROCESSENTRY32 entry;
-
     entry.dwSize = sizeof(PROCESSENTRY32);
-
-
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
-
     if (Process32First(snapshot, &entry) == TRUE) {
-
         while (Process32Next(snapshot, &entry) == TRUE) {
-
             if (lstrcmp(entry.szExeFile, "crashpad_handler.exe") == 0) {
-
                 HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID);
 
                 if (hProcess!= NULL) {
-
                     TerminateProcess(hProcess, 0);
-
                     CloseHandle(hProcess);
-
                 }
-
             }
-
         }
-
     }
-
     CloseHandle(snapshot);
-
 }
 
 
 
 
 DWORD WINAPI hook_thread(PVOID lParam){
-    int render = *(static_cast<int*>(lParam));
-    printf("renderer: %d\n", render);
-    HWND window = nullptr;
-
-    switch(render){
-        case 0:
-        	window = GetProcessWindow();
-            VK::Hook(window);
-            break;
-        case 1:
-        	window = GetProcessWindow();
-            GL::Hook(window);
-            break;    
-        case 2:
-        	window = GetProcessWindow();
-            DX11::Hook(window);
-            break;
-        case 3:
-        	window = GetProcessWindow();
-            DX12::Hook(window);
-            break;
-        case 4:
-        	{
-        		WCHAR path[MAX_PATH];
-            	GetModuleFileNameW(NULL, path, MAX_PATH);
-            	std::wstring ws(path);
-            	std::string _path(ws.begin(), ws.end());
-           		SetEnvironmentVariable("VK_ADD_LAYER_PATH", _path.substr(0, _path.find_last_of("\\/")).c_str());
-            	SetEnvironmentVariable("VK_LOADER_LAYERS_ENABLE", "VkLayer_lukas_sml,*validation");
-        		window = GetProcessWindow();
-        		layer::setup(window);
-        	}
-        	break;        
-        default:
-            printf("Invalid renderer: %d", render);
-            return EXIT_FAILURE;    
-    }
-    
+    HWND window;
+    WCHAR path[MAX_PATH];
+    GetModuleFileNameW(NULL, path, MAX_PATH);
+    std::wstring ws(path);
+    std::string _path(ws.begin(), ws.end());
+    SetEnvironmentVariable("VK_ADD_LAYER_PATH", _path.substr(0, _path.find_last_of("\\/")).c_str());
+    SetEnvironmentVariable("VK_LOADER_LAYERS_ENABLE", "VkLayer_lukas_sml,*validation"); 
+        		
+    while(!window){
+        printf("searching for window \n");
+        std::this_thread::sleep_for(std::chrono::milliseconds(100)); //prone for a race condition (1 second crashes);
+        window = FindWindowA("TgcMainWindow", "Sky");
+        } 
+    printf("found window: %p\n", window);
+    layer::setup(window);      
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     return EXIT_SUCCESS;
 }
 
-int *getInput(){
-  
-    char buf[1080];
-    static int *renderer = new int();
- 
-    printf("Choose a graphics api:\n"
 
-       "0: Vulkan\n"
-
-       "1: OpenGL\n"
-
-       "2: DirectX 11\n"
-
-       "3: DirectX 12\n"
-
-       "4: Vulkan Layer\n"
-
-       "Enter your choice: ");
-
-    scanf_s("%d", renderer);
-
-    return renderer;
-}
 
 void onAttach(){
-
-
-
     terminateCrashpadHandler();
-    InitConsole();
-
-    int *renderer = getInput();
-    FreeConsole();
-
-    if(*renderer == -1) return;
     static HANDLE dllHandle = CreateThread(NULL, 0, DllThread, NULL, 0, NULL);
-    static HANDLE hook = CreateThread(NULL, 0, hook_thread, (void *)renderer, 0, NULL);
+    static HANDLE hook = CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);
 }
 
 
