@@ -149,7 +149,7 @@ static std::vector<VkQueueFamilyProperties> g_QueueFamilies;
 
 static VkPipelineCache g_PipelineCache = VK_NULL_HANDLE;
 static VkDescriptorPool g_DescriptorPool = VK_NULL_HANDLE;
-static uint32_t g_MinImageCount = 2;
+static uint32_t g_MinImageCount = 1;
 static VkRenderPass g_RenderPass = VK_NULL_HANDLE;
 static ImGui_ImplVulkanH_Frame g_Frames[8] = { };
 static ImGui_ImplVulkanH_FrameSemaphores g_FrameSemaphores[8] = { };
@@ -254,7 +254,7 @@ static void CreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain) {
 
     VkImage backbuffers[8] = { };
     vkGetSwapchainImagesKHR(device, swapchain, &uImageCount, backbuffers);
-
+    g_MinImageCount = uImageCount;
     for (uint32_t i = 0; i < uImageCount; ++i) {
         g_Frames[i].Backbuffer = backbuffers[i];
 
@@ -335,7 +335,6 @@ static void CreateRenderTarget(VkDevice device, VkSwapchainKHR swapchain) {
         info.subresourceRange.levelCount = 1;
         info.subresourceRange.baseArrayLayer = 0;
         info.subresourceRange.layerCount = 1;
-
         for (uint32_t i = 0; i < uImageCount; ++i) {
             ImGui_ImplVulkanH_Frame* fd = &g_Frames[i];
             info.image = fd->Backbuffer;
