@@ -16,7 +16,7 @@ void ModLoader::LoadMods() {
     GetModuleFileNameA(NULL, buffer, MAX_PATH);
     std::string::size_type pos = std::string(buffer).find_last_of("\\/");
     if (pos != std::string::npos) {
-        directory = std::string(buffer).substr(0, pos) + "/" + directory;
+        directory = std::string(buffer).substr(0, pos) + "\\" + directory;
     }
 
     for (const auto& entry : std::filesystem::directory_iterator(directory)) {
