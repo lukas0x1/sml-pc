@@ -1,4 +1,7 @@
 #include <chrono>
+
+#include <corecrt_wstring.h>
+#include <string>
 #include <windows.h>
 #include <stdio.h>
 #include <vulkan/vulkan.h>
@@ -6,6 +9,7 @@
 #include <dxgi.h>
 #include <libmem.h>
 #include <imgui.h>
+#include <winreg.h>
 #include <winuser.h>
 #include <xlocale>
 #include "include/api.h"
@@ -18,6 +22,8 @@
 
 
 HMODULE dllHandle = nullptr;
+std::string g_path;
+
 
 BOOLEAN (*o_GetPwrCapabilities)(PSYSTEM_POWER_CAPABILITIES);
 NTSTATUS (*o_CallNtPowerInformation)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG);
@@ -37,6 +43,7 @@ extern "C"
 __declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
     return o_PowerDeterminePlatformRole();
 }
+
 
 
 void InitConsole(){
@@ -176,16 +183,87 @@ void terminateCrashpadHandler() {
     CloseHandle(snapshot);
 }
 
+#ifndef STATUS_SUCCESS
+#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+#endif
 
+#ifndef STATUS_BUFFER_TOO_SMALL
+#define STATUS_BUFFER_TOO_SMALL ((NTSTATUS)0xC0000023L)
+#endif
+
+std::wstring GetKeyPathFromKKEY(HKEY key)
+{
+    std::wstring keyPath;
+    if (key != NULL)
+    {
+        HMODULE dll = LoadLibrary("ntdll.dll");
+        if (dll != NULL) {
+            typedef DWORD (__stdcall *NtQueryKeyType)(
+                HANDLE  KeyHandle,
+                int KeyInformationClass,
+                PVOID  KeyInformation,
+                ULONG  Length,
+                PULONG  ResultLength);
+
+            NtQueryKeyType func = reinterpret_cast<NtQueryKeyType>(::GetProcAddress(dll, "NtQueryKey"));
+
+            if (func != NULL) {
+                DWORD size = 0;
+                DWORD result = 0;
+                result = func(key, 3, 0, 0, &size);
+                if (result == STATUS_BUFFER_TOO_SMALL)
+                {
+                    size = size + 2;
+                    wchar_t* buffer = new (std::nothrow) wchar_t[size/sizeof(wchar_t)]; // size is in bytes
+                    if (buffer != NULL)
+                    {
+                        result = func(key, 3, buffer, size, &size);
+                        if (result == STATUS_SUCCESS)
+                        {
+                            buffer[size / sizeof(wchar_t)] = L'\0';
+                            keyPath = std::wstring(buffer + 2);
+                        }
+
+                        delete[] buffer;
+                    }
+                }
+            }
+
+            FreeLibrary(dll);
+        }
+    }
+    return keyPath;
+}
+
+
+typedef LSTATUS (__stdcall *PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
+PFN_RegEnumValueA oRegEnumValueA;
+LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData){
+
+    std::wstring path = GetKeyPathFromKKEY(hKey);
+    std::string name = g_path + "\\sml_config.json";
+    
+    LSTATUS result = oRegEnumValueA(hKey, dwIndex, lpValueName,lpcchValueName ,lpReserved, lpType, lpData, lpcbData);
+    if(wcscmp(path.c_str(), L"\\REGISTRY\\MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers") == 0 && dwIndex == 0 ){
+
+        for (size_t i = 0; i < name.size(); i++) {
+        lpValueName[i] = name[i];
+        }
+        lpValueName[name.size()] = '\0';
+
+        *lpcchValueName = 2048; //max path
+        lpData = nullptr;
+        *lpcbData = 4;
+    }
+    //std::string path_(path.begin(), path.end());
+    //printf("read registry:  %ls, %lu, %s, %lu, %s, %lu\n", path.c_str(), dwIndex, lpValueName, *lpcchValueName, lpData, *lpcbData);
+    return result;
+}
 
 
 DWORD WINAPI hook_thread(PVOID lParam){
-    HWND window;
-    WCHAR path[MAX_PATH];
-    GetModuleFileNameW(NULL, path, MAX_PATH);
-    std::wstring ws(path);
-    std::string _path(ws.begin(), ws.end());
-    SetEnvironmentVariable("VK_ADD_LAYER_PATH", _path.substr(0, _path.find_last_of("\\/")).c_str());
+    HWND window; 
+    SetEnvironmentVariable("VK_ADD_LAYER_PATH", g_path.c_str());
     SetEnvironmentVariable("VK_LOADER_LAYERS_ENABLE", "VkLayer_lukas_sml,*validation"); 
         		
     while(!window){
@@ -202,6 +280,18 @@ DWORD WINAPI hook_thread(PVOID lParam){
 
 
 void onAttach(){
+    WCHAR path[MAX_PATH];
+    GetModuleFileNameW(NULL, path, MAX_PATH);
+    std::wstring ws(path);
+    std::string _path(ws.begin(), ws.end());
+    g_path = _path.substr(0, _path.find_last_of("\\/"));
+    HMODULE handle = LoadLibrary("advapi32.dll");
+    if(!handle){
+        printf("didn't find advapi32.dll");
+    }
+    lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
+    LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t *)&oRegEnumValueA);
+
     terminateCrashpadHandler();
     static HANDLE dllHandle = CreateThread(NULL, 0, DllThread, NULL, 0, NULL);
     static HANDLE hook = CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);

@@ -4,6 +4,8 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_layer.h>
 #include <vk_layer_dispatch_table.h>
+#include "libmem.h"
+#include "vulkan/vk_platform.h"
 #include "vulkan/vulkan_core.h"
 #include "windows.h"
 
@@ -21,6 +23,7 @@
 
 #include <mutex>
 #include <map>
+#include <xlocale>
 
 
 
@@ -457,6 +460,8 @@ VK_LAYER_EXPORT VkResult VKAPI_CALL ModLoader_CreateDevice(
     const VkAllocationCallbacks*                pAllocator,
     VkDevice*                                   pDevice)
 {
+
+  printf("device created 1\n");
   VkLayerDeviceCreateInfo *layerCreateInfo = (VkLayerDeviceCreateInfo *)pCreateInfo->pNext;
 
   // step through the chain of pNext until we get to the link info
@@ -583,6 +588,7 @@ VK_LAYER_EXPORT PFN_vkVoidFunction VKAPI_CALL ModLoader_GetInstanceProcAddr(VkIn
 
 
 
+
 void layer::setup(HWND hwnd){
 
   if (!CreateDeviceVK( )) {
@@ -591,6 +597,8 @@ void layer::setup(HWND hwnd){
   }
 
   g_Hwnd = hwnd;
+
+
 }
 
 
