@@ -31,7 +31,7 @@ void ModApi::InitSkyBase() {
 	skyBase = (uintptr_t)LoadLibrary(TEXT("Sky.exe"));
 */
     lm_module_t mod;
-    while(LM_FindModule("Sky.exe", &mod) == 0) Sleep(100);
+    while(LM_LoadModule("Sky.exe", &mod) == 0) Sleep(100);
     skyBase = mod.base;
     skySize = mod.size;
 }

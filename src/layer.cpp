@@ -461,7 +461,6 @@ VK_LAYER_EXPORT VkResult VKAPI_CALL ModLoader_CreateDevice(
     VkDevice*                                   pDevice)
 {
 
-  printf("device created 1\n");
   VkLayerDeviceCreateInfo *layerCreateInfo = (VkLayerDeviceCreateInfo *)pCreateInfo->pNext;
 
   // step through the chain of pNext until we get to the link info

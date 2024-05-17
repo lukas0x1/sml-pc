@@ -122,19 +122,6 @@ void loadWrapper(){
 
 
 
-DWORD WINAPI DllThread(LPVOID lpParam){
-	InitConsole();
-    loadWrapper();
-    ModApi::Instance().InitSkyBase();
-
-    //HOOK_SET(ModApi::Instance().GetSkyBase() + 0x13311C0, AvatarEnergy_Use);
-    ModLoader::LoadMods();
-    //uintptr_t CheckpointBarn = *(uintptr_t *)(gv::gamePtr + 0x1);
-    //CheckpointBarn_m_ChangeLevel = (uintptr_t (*)(uintptr_t, uintptr_t, const char *))(ModApi::Instance().GetSkyBase() + 0x1188810);
-
-
-    return EXIT_SUCCESS;
-}
 
 
 
@@ -236,6 +223,22 @@ std::wstring GetKeyPathFromKKEY(HKEY key)
 }
 
 
+#undef STATUS_BUFFER_TOO_SMALL
+#undef STATUS_SUCCESS
+
+
+
+void clear_screen(char fill = ' ') { 
+    COORD tl = {0,0};
+    CONSOLE_SCREEN_BUFFER_INFO s;
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);   
+    GetConsoleScreenBufferInfo(console, &s);
+    DWORD written, cells = s.dwSize.X * s.dwSize.Y;
+    FillConsoleOutputCharacter(console, fill, cells, tl, &written);
+    FillConsoleOutputAttribute(console, s.wAttributes, cells, tl, &written);
+    SetConsoleCursorPosition(console, tl);
+}
+
 typedef LSTATUS (__stdcall *PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
 PFN_RegEnumValueA oRegEnumValueA;
 LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData){
@@ -255,6 +258,7 @@ LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpc
         lpData = nullptr;
         *lpcbData = 4;
     }
+     
     //std::string path_(path.begin(), path.end());
     //printf("read registry:  %ls, %lu, %s, %lu, %s, %lu\n", path.c_str(), dwIndex, lpValueName, *lpcchValueName, lpData, *lpcbData);
     return result;
@@ -262,10 +266,10 @@ LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpc
 
 
 DWORD WINAPI hook_thread(PVOID lParam){
-    HWND window; 
-    SetEnvironmentVariable("VK_ADD_LAYER_PATH", g_path.c_str());
-    SetEnvironmentVariable("VK_LOADER_LAYERS_ENABLE", "VkLayer_lukas_sml,*validation"); 
-        		
+    HWND window = nullptr; 
+    //SetEnvironmentVariable("VK_ADD_LAYER_PATH", g_path.c_str());
+    //SetEnvironmentVariable("VK_LOADER_LAYERS_ENABLE", "VkLayer_lukas_sml,*validation"); 
+    	
     while(!window){
         printf("searching for window \n");
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); //prone for a race condition (1 second crashes);
@@ -274,12 +278,20 @@ DWORD WINAPI hook_thread(PVOID lParam){
     printf("found window: %p\n", window);
     layer::setup(window);      
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
+    InitConsole();
+    Sleep(3000);
+    clear_screen();
+    return EXIT_SUCCESS;
+}
+
+DWORD WINAPI console_thread(LPVOID lpParam){
+    
     return EXIT_SUCCESS;
 }
 
 
-
 void onAttach(){
+    loadWrapper();
     WCHAR path[MAX_PATH];
     GetModuleFileNameW(NULL, path, MAX_PATH);
     std::wstring ws(path);
@@ -291,10 +303,12 @@ void onAttach(){
     }
     lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
     LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t *)&oRegEnumValueA);
-
+   
     terminateCrashpadHandler();
-    static HANDLE dllHandle = CreateThread(NULL, 0, DllThread, NULL, 0, NULL);
-    static HANDLE hook = CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);
+    ModApi::Instance().InitSkyBase();
+    ModLoader::LoadMods();
+    CreateThread(NULL, 0, console_thread, NULL, 0, NULL);
+    CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);
 }
 
 
