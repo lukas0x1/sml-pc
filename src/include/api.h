@@ -47,5 +47,10 @@ public:
 
     bool UnHook(uintptr_t addr);
 
+    bool DefPatch(uintptr_t address, const char* patchBytes);
+
+    bool Patch(uintptr_t address);
+    
+    bool Restore(uintptr_t address);
 
 };

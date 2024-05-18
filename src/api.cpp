@@ -1,6 +1,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <unordered_map>
+#include <iostream>
+#include <sstream>
 #include <libmem.h>
 #include "include/api.h"
 
@@ -12,6 +14,8 @@ struct HookDef {
 };
 
 std::unordered_map<uintptr_t, HookDef> hooks;
+std::unordered_map<uintptr_t, std::vector<unsigned char>> OriginalBytes;
+std::unordered_map<uintptr_t, std::vector<unsigned char>> patches;
 
 ModApi* ModApi::instance = NULL;
 
@@ -77,4 +81,74 @@ bool ModApi::UnHook(uintptr_t addr) {
         }
     }
     return false;
+}
+
+
+bool ModApi::DefPatch(uintptr_t address, const char* patchBytes){
+    
+    std::vector<unsigned char> PatchBytes;
+    std::istringstream byteStream(patchBytes);
+
+    unsigned int byteValue;
+    while (byteStream >> std::hex >> byteValue) {
+        PatchBytes.push_back(static_cast<unsigned char>(byteValue));
+    }
+    size_t size = PatchBytes.size();
+    patches[address] = PatchBytes;
+
+    // Change the protection to ReadWriteable
+    if (!LM_ProtMemory(address, size,LM_PROT_XRW, NULL)) {
+        std::cerr << "Failed to Change protection at address: " << std::hex << address << std::endl;
+        return false;
+    }
+
+    // Store the original bytes
+    std::vector<unsigned char> originalBytes(size);
+    if (!LM_ReadMemory(address, originalBytes.data(), size)) {
+        std::cerr << "Failed to read memory at address: " << std::hex << address << std::endl;
+        return false;
+    }
+
+    // Save original bytes in the map
+    OriginalBytes[address] = originalBytes;
+
+    return true;
+}
+
+bool ModApi::Patch(uintptr_t address) {
+
+    // Check if the patch bytes are stored in the map
+    auto it = patches.find(address);
+    if (it == patches.end()) {
+        std::cerr << "No Patch bytes found for address: " << std::hex << address << std::endl;
+        return false;
+    }
+
+    std::vector<unsigned char>& PatchBytes = it->second;
+
+    // Write the patch bytes
+    if (!LM_WriteMemory(address, PatchBytes.data(), PatchBytes.size())) {
+        std::cerr << "Failed to write memory at address: " << std::hex << address << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+bool ModApi::Restore(uintptr_t address) {
+    // Check if the original bytes are stored in the map
+    auto it = OriginalBytes.find(address);
+    if (it == OriginalBytes.end()) {
+        std::cerr << "No original bytes found for address: " << std::hex << address << std::endl;
+        return false;
+    }
+
+    const std::vector<unsigned char>& OriginalBytes = it->second;
+    // Restore the original bytes
+    if (!LM_WriteMemory(address, OriginalBytes.data(), OriginalBytes.size())) {
+        std::cerr << "Failed to restore memory at address: " << std::hex << address << std::endl;
+        return false;
+    }
+
+    return true;
 }
