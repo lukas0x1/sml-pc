@@ -47,6 +47,7 @@ __declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
 
 
 void InitConsole(){
+    FreeConsole();
     AllocConsole();
     SetConsoleTitle("sml console");
 
@@ -269,9 +270,8 @@ DWORD WINAPI hook_thread(PVOID lParam){
     HWND window = nullptr; 
     //SetEnvironmentVariable("VK_ADD_LAYER_PATH", g_path.c_str());
     //SetEnvironmentVariable("VK_LOADER_LAYERS_ENABLE", "VkLayer_lukas_sml,*validation"); 
-    	
+    printf("searching for window \n");
     while(!window){
-        printf("searching for window \n");
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); //prone for a race condition (1 second crashes);
         window = FindWindowA("TgcMainWindow", "Sky");
         } 
@@ -303,7 +303,7 @@ void onAttach(){
     }
     lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
     LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t *)&oRegEnumValueA);
-   
+    InitConsole();
     terminateCrashpadHandler();
     ModApi::Instance().InitSkyBase();
     ModLoader::LoadMods();
