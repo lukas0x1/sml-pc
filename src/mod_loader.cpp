@@ -19,6 +19,11 @@ void ModLoader::LoadMods() {
         directory = std::string(buffer).substr(0, pos) + "\\" + directory;
     }
 
+    DWORD ftyp = GetFileAttributesA(directory.c_str());
+    if(ftyp == INVALID_FILE_ATTRIBUTES){
+        printf("creating mods directory\n");
+        CreateDirectoryA((LPCSTR)directory.c_str(), NULL);
+    }
     for (const auto& entry : std::filesystem::directory_iterator(directory)) {
         if (entry.is_regular_file()) { // is regular file
             std::string filePath = entry.path().string();
