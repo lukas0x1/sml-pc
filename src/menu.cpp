@@ -13,10 +13,10 @@ namespace ig = ImGui;
 
 struct FontConfig {
     std::string fontPath;
-	float fontSize;
-    unsigned int unicodeRangeStart;
-    unsigned int unicodeRangeEnd;
-}fontconfig;
+    float fontSize = 0.0f;
+    unsigned int unicodeRangeStart = 0;
+    unsigned int unicodeRangeEnd = 0;
+} fontconfig;
 
 namespace Menu {
     void loadFontConfig(const std::string& filename, FontConfig& fontconfig) {
@@ -30,13 +30,8 @@ namespace Menu {
         try {
             file >> jsonData;
 
-            // Read fontPath
             fontconfig.fontPath = jsonData["fontPath"].get<std::string>();
-
-			// Read fontSize
 			fontconfig.fontSize = jsonData["fontSize"].get<float>();
-
-            // Read unicodeRangeStart and unicodeRangeEnd
             fontconfig.unicodeRangeStart = static_cast<ImWchar>(std::stoi(jsonData["unicodeRangeStart"].get<std::string>(), nullptr, 16));
             fontconfig.unicodeRangeEnd = static_cast<ImWchar>(std::stoi(jsonData["unicodeRangeEnd"].get<std::string>(), nullptr, 16));
 
@@ -48,9 +43,7 @@ namespace Menu {
 
     void LoadFontsFromFolder(FontConfig& fontconfig) {
         static const ImWchar ranges[] = {
-        static_cast<ImWchar>(fontconfig.unicodeRangeStart), static_cast<ImWchar>(fontconfig.unicodeRangeEnd),   // Dynamic Unicode range
-        0  // end of list
-        };
+        static_cast<ImWchar>(fontconfig.unicodeRangeStart), static_cast<ImWchar>(fontconfig.unicodeRangeEnd), 0 };
         ImGuiIO& io = ImGui::GetIO();
 
         namespace fs = std::filesystem;
@@ -67,7 +60,6 @@ namespace Menu {
                     Imfontconfig.OversampleV = 3;
                     Imfontconfig.PixelSnapH = true;
 
-                    // Attempt to load font
                     if (!io.Fonts->AddFontFromFileTTF(filename.c_str(), fontconfig.fontSize, &Imfontconfig, ranges)) {
                         std::cerr << "Failed to load font: " << filename << std::endl;
                     }
@@ -108,55 +100,59 @@ namespace Menu {
         io.IniFilename = io.LogFilename = nullptr;
     }
 
-    void SMLMainMenu(){
+    void SMLMainMenu() {
         char buf[64];
-        ig::SetNextWindowSize({200, 0}, ImGuiCond_Once);
-        if(ig::Begin("SML Main")) {
+        ig::SetNextWindowSize({ 200, 0 }, ImGuiCond_Once);
+        if (ig::Begin("SML Main")) {
+            ImGui::SeparatorText("Mods");
             ig::BeginTable("##mods", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBody);
             ig::TableSetupColumn("Mod", ImGuiTableColumnFlags_WidthStretch);
-            ig::TableSetupColumn( "Info", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("Info").x);
+            ig::TableSetupColumn("Info", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("Info").x);
 
-            for(int i = 0; i < ModLoader::GetModCount(); i++) {
-                    snprintf(buf, 64, "%s##check%d", ModLoader::GetModName(i).data(), i);
-                    ig::TableNextColumn();
-                    if(ig::Checkbox(buf, &ModLoader::GetModEnabled(i))) {
-                        if(ModLoader::GetModEnabled(i)) {
-                            ModLoader::EnableMod(i);
-                        } else {
-                            ModLoader::DisableMod(i);
-                        }
+            for (int i = 0; i < ModLoader::GetModCount(); i++) {
+                snprintf(buf, 64, "%s##check%d", ModLoader::GetModName(i).data(), i);
+                ig::TableNextColumn();
+                if (ig::Checkbox(buf, &ModLoader::GetModEnabled(i))) {
+                    if (ModLoader::GetModEnabled(i)) {
+                        ModLoader::EnableMod(i);
                     }
-                    ig::TableNextColumn();
-                    ig::TextDisabled("(?)");
-                    if (ig::BeginItemTooltip())
-                    {
-                        ig::PushTextWrapPos(ig::GetFontSize() * 35.0f);
-                        ig::TextUnformatted(ModLoader::toString(i).c_str());
-                        ig::PopTextWrapPos();
-                        ig::EndTooltip();
+                    else {
+                        ModLoader::DisableMod(i);
                     }
+                }
+                ig::TableNextColumn();
+                ig::TextDisabled("(?)");
+                if (ig::BeginItemTooltip())
+                {
+                    ig::PushTextWrapPos(ig::GetFontSize() * 35.0f);
+                    ig::TextUnformatted(ModLoader::toString(i).c_str());
+                    ig::PopTextWrapPos();
+                    ig::EndTooltip();
+                }
             }
             ig::EndTable();
+            ImGui::SeparatorText("Settings");
             ImGuiIO& io = ImGui::GetIO();
-            ImGui::Text("font's path %s", fontconfig.fontPath.c_str());
-            ImGui::SameLine();
-            ImGui::Text("font's Start Range is %u", fontconfig.unicodeRangeStart);
-            ImGui::SameLine();
-            ImGui::Text("font's End Ranse is %u", fontconfig.unicodeRangeEnd);
-            ImGui::Text("Fonts: %d fonts, TexSize: width %d, height %d", io.Fonts->Fonts.Size, io.Fonts->TexWidth, io.Fonts->TexHeight);
             ShowFontSelector();
-            
+
             const float MIN_SCALE = 0.3f;
             const float MAX_SCALE = 3.0f;
             static float window_scale = 1.0f;
-            if (ImGui::DragFloat("window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp)) // Scale only this window
+
+            if (ImGui::DragFloat("Window Scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp))
                 ImGui::SetWindowFontScale(window_scale);
-            ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp); // Scale everything
-            ImGui::Text(
-                    "Application average %.3f ms/frame (%.1f FPS)",
-                    1000.0f / io.Framerate,
-                    io.Framerate
-            );
+            
+            io.FontGlobalScale = 0.95f;
+            ImGui::DragFloat("Global Scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+            
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::Text("Total Fonts: %d", io.Fonts->Fonts.Size, io.Fonts->TexWidth, io.Fonts->TexHeight);
+            ImGui::SameLine();
+            ImGui::Text("| Total Mods: %d", ModLoader::GetModCount());
+            ImGui::Text("Application Average %.3fms (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
         }
         ig::End();
     }
@@ -166,6 +162,5 @@ namespace Menu {
             return;
         SMLMainMenu();
         ModLoader::RenderAll();
-        //ig::ShowDemoWindow( );
     }
-} // namespace Menu
+}
