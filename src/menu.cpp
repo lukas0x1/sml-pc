@@ -148,7 +148,7 @@ namespace Menu {
             ImGuiIO& io = ImGui::GetIO();
             ShowFontSelector();
             ImGui::SameLine();
-            HelpMarker(std::format("Total: {}\nPath: {}\nStart Range: {}\nEnd Range: {}\nSize: {}W / {}H", fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd, io.Fonts->Fonts.Size, io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
+            HelpMarker(std::format("Total: {}\nPath: {}\nStart Range: {}\nEnd Range: {}\nSize: {}W / {}H", io.Fonts->Fonts.Size, fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd, io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
             
             const float MIN_SCALE = 0.3f;
             const float MAX_SCALE = 3.0f;
