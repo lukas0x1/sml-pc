@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <format>
 #include <imgui.h>
 #include <imgui_impl_win32.h>
 #include "include/menu.hpp"
@@ -13,10 +14,10 @@ namespace ig = ImGui;
 
 struct FontConfig {
     std::string fontPath;
-	float fontSize;
-    unsigned int unicodeRangeStart;
-    unsigned int unicodeRangeEnd;
-}fontconfig;
+    float fontSize = 0.0f;
+    unsigned int unicodeRangeStart = 0;
+    unsigned int unicodeRangeEnd = 0;
+} fontconfig;
 
 namespace Menu {
     void loadFontConfig(const std::string& filename, FontConfig& fontconfig) {
@@ -48,7 +49,7 @@ namespace Menu {
 
     void LoadFontsFromFolder(FontConfig& fontconfig) {
         static const ImWchar ranges[] = {
-        static_cast<ImWchar>(fontconfig.unicodeRangeStart), static_cast<ImWchar>(fontconfig.unicodeRangeEnd),   // Dynamic Unicode range
+        static_cast<ImWchar>(fontconfig.unicodeRangeStart), static_cast<ImWchar>(fontconfig.unicodeRangeEnd),   // Dynamic Unicode range from sml_config.json
         0  // end of list
         };
         ImGuiIO& io = ImGui::GetIO();
@@ -108,10 +109,23 @@ namespace Menu {
         io.IniFilename = io.LogFilename = nullptr;
     }
 
-    void SMLMainMenu(){
+    void HelpMarker(const char* description){ 
+        ImGui::TextDisabled("(?)");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted(description);
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+    }
+
+    void SMLMainMenu() {
         char buf[64];
         ig::SetNextWindowSize({200, 0}, ImGuiCond_Once);
-        if(ig::Begin("SML Main")) {
+        if(ig::Begin("SML Main",nullptr,ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::SeparatorText("Mods");
             ig::BeginTable("##mods", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBody);
             ig::TableSetupColumn("Mod", ImGuiTableColumnFlags_WidthStretch);
             ig::TableSetupColumn( "Info", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("Info").x);
@@ -127,31 +141,29 @@ namespace Menu {
                         }
                     }
                     ig::TableNextColumn();
-                    ig::TextDisabled("(?)");
-                    if (ig::BeginItemTooltip())
-                    {
-                        ig::PushTextWrapPos(ig::GetFontSize() * 35.0f);
-                        ig::TextUnformatted(ModLoader::toString(i).c_str());
-                        ig::PopTextWrapPos();
-                        ig::EndTooltip();
-                    }
+                    HelpMarker(ModLoader::toString(i).c_str());
             }
             ig::EndTable();
+            ImGui::SeparatorText("Settings");
             ImGuiIO& io = ImGui::GetIO();
-            ImGui::Text("font's path %s", fontconfig.fontPath.c_str());
-            ImGui::SameLine();
-            ImGui::Text("font's Start Range is %u", fontconfig.unicodeRangeStart);
-            ImGui::SameLine();
-            ImGui::Text("font's End Ranse is %u", fontconfig.unicodeRangeEnd);
-            ImGui::Text("Fonts: %d fonts, TexSize: width %d, height %d", io.Fonts->Fonts.Size, io.Fonts->TexWidth, io.Fonts->TexHeight);
             ShowFontSelector();
+            ImGui::SameLine();
+            HelpMarker(std::format("Fonts path: {}\nFonts Start Range: {}\nFonts End Ranse: {}\nTotal Fonts: {}\nTexSize: width {}, height {}\nchange sml_config.json as needed", fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd, io.Fonts->Fonts.Size, io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
             
             const float MIN_SCALE = 0.3f;
             const float MAX_SCALE = 3.0f;
             static float window_scale = 1.0f;
-            if (ImGui::DragFloat("window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp)) // Scale only this window
+            if (ImGui::DragFloat("window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp))
                 ImGui::SetWindowFontScale(window_scale);
-            ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp); // Scale everything
+            ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+            
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            ImGui::Text("Total Fonts: %d", io.Fonts->Fonts.Size);
+            ImGui::SameLine();
+            ImGui::Text("| Total Mods: %llu", ModLoader::GetModCount());
             ImGui::Text(
                     "Application average %.3f ms/frame (%.1f FPS)",
                     1000.0f / io.Framerate,
@@ -166,6 +178,5 @@ namespace Menu {
             return;
         SMLMainMenu();
         ModLoader::RenderAll();
-        //ig::ShowDemoWindow( );
     }
-} // namespace Menu
+}

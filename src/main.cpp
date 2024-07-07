@@ -45,11 +45,10 @@ __declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
 }
 
 
-
 void InitConsole(){
     FreeConsole();
     AllocConsole();
-    SetConsoleTitle("sml console");
+    SetConsoleTitle("SML Console");
 
     if (IsValidCodePage(CP_UTF8)) {
         SetConsoleCP(CP_UTF8);
@@ -83,49 +82,25 @@ void InitConsole(){
     freopen_s(&inputStream, "CONIN$", "r", stdin);
 }
 
-
-
 void loadWrapper(){
- 
-/*
-
-    TCHAR dllPath[1024 + 64];
-    DWORD dllPathSize = GetSystemDirectory(dllPath, 1024);
-    if (dllPathSize == 0)
-    {
-        Fail("Could not get system directory path");
-    }
-
-    
-    wcscpy_s(dllPath + dllPathSize, std::size(dllPath) - dllPathSize, L"\\powrprof.dll");
-*/
-
-
     dllHandle = LoadLibrary("C:\\Windows\\System32\\powrprof.dll");
     if (dllHandle == NULL) {
         dllHandle = LoadLibrary("C:\\Windows\\System32\\POWRPROF.dll");
-        if(dllHandle == NULL){
-            printf("failed to load POWRPROF.dll");
-        }
     }
 
-    o_GetPwrCapabilities = (BOOLEAN(*)(PSYSTEM_POWER_CAPABILITIES))GetProcAddress(dllHandle, "GetPwrCapabilities");
-    o_CallNtPowerInformation = (NTSTATUS (*)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG))GetProcAddress(dllHandle, "CallNtPowerInformation");
-    o_PowerDeterminePlatformRole = (POWER_PLATFORM_ROLE (*)())GetProcAddress(dllHandle, "PowerDeterminePlatformRole");
+    if (dllHandle != NULL) {
+        o_GetPwrCapabilities = (BOOLEAN(*)(PSYSTEM_POWER_CAPABILITIES))GetProcAddress(dllHandle, "GetPwrCapabilities");
+        o_CallNtPowerInformation = (NTSTATUS (*)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG))GetProcAddress(dllHandle, "CallNtPowerInformation");
+        o_PowerDeterminePlatformRole = (POWER_PLATFORM_ROLE (*)())GetProcAddress(dllHandle, "PowerDeterminePlatformRole");
     
     if (o_GetPwrCapabilities == nullptr || o_CallNtPowerInformation == nullptr || o_PowerDeterminePlatformRole == nullptr) {
         printf("Could not locate symbols in powrprof.dll");
     }
-
+    }
+    else {
+        printf("failed to load POWRPROF.dll");
+    }
 }
-
-
-
-
-
-
-
-
 
 static WNDPROC oWndProc;
 static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -259,22 +234,17 @@ LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpc
         lpData = nullptr;
         *lpcbData = 4;
     }
-     
-    //std::string path_(path.begin(), path.end());
-    //printf("read registry:  %ls, %lu, %s, %lu, %s, %lu\n", path.c_str(), dwIndex, lpValueName, *lpcchValueName, lpData, *lpcbData);
     return result;
 }
 
 
 DWORD WINAPI hook_thread(PVOID lParam){
     HWND window = nullptr; 
-    //SetEnvironmentVariable("VK_ADD_LAYER_PATH", g_path.c_str());
-    //SetEnvironmentVariable("VK_LOADER_LAYERS_ENABLE", "VkLayer_lukas_sml,*validation"); 
-    printf("searching for window \n");
+    printf("Searching for window \n");
     while(!window){
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); //prone for a race condition (1 second crashes);
         window = FindWindowA("TgcMainWindow", "Sky");
-        } 
+    } 
     printf("found window: %p\n", window);
     layer::setup(window);      
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
@@ -298,20 +268,20 @@ void onAttach(){
     std::string _path(ws.begin(), ws.end());
     g_path = _path.substr(0, _path.find_last_of("\\/"));
     HMODULE handle = LoadLibrary("advapi32.dll");
-    if(!handle){
-        printf("didn't find advapi32.dll");
+    if(handle!= NULL){
+        lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
+        LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t *)&oRegEnumValueA);
+        InitConsole();
+        terminateCrashpadHandler();
+        ModApi::Instance().InitSkyBase();
+        ModLoader::LoadMods();
+        CreateThread(NULL, 0, console_thread, NULL, 0, NULL);
+        CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);
     }
-    lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
-    LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t *)&oRegEnumValueA);
-    InitConsole();
-    terminateCrashpadHandler();
-    ModApi::Instance().InitSkyBase();
-    ModLoader::LoadMods();
-    CreateThread(NULL, 0, console_thread, NULL, 0, NULL);
-    CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);
+    else {
+        printf("Failed to load advapi32.dll");
+    }
 }
-
-
 
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved){
