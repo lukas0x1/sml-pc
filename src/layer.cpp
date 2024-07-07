@@ -1,13 +1,10 @@
 #include <cstdio>
-#include <unordered_map>
 #include <vector>
 #include <vulkan/vulkan.h>
 #include <vulkan/vk_layer.h>
 #include <vk_layer_dispatch_table.h>
-#include "libmem.h"
 #include "vulkan/vk_platform.h"
 #include "vulkan/vulkan_core.h"
-#include "windows.h"
 
 
 #include "include/layer.h"
