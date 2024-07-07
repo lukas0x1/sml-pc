@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.0.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 
 project(canvas VERSION 0.1.0 LANGUAGES CXX C)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS on)
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 file(GLOB CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp )
 
@@ -17,46 +17,45 @@ add_library(
 	include/imgui/imgui_impl_win32.cpp
 	include/imgui/imgui_tables.cpp
 	include/imgui/imgui_widgets.cpp
-    include/cpr/accept_encoding.cpp
-    include/cpr/async.cpp
-    include/cpr/auth.cpp
-    include/cpr/bearer.cpp
-    include/cpr/callback.cpp
-    include/cpr/cert_info.cpp
-    include/cpr/cookies.cpp
-    include/cpr/cprtypes.cpp
-    include/cpr/curl_container.cpp
-    include/cpr/curlholder.cpp
-    include/cpr/error.cpp
-    include/cpr/file.cpp
-    include/cpr/multipart.cpp
-    include/cpr/parameters.cpp
-    include/cpr/payload.cpp
-    include/cpr/proxies.cpp
-    include/cpr/proxyauth.cpp
-    include/cpr/session.cpp
-    include/cpr/threadpool.cpp
-    include/cpr/timeout.cpp
-    include/cpr/unix_socket.cpp
-    include/cpr/util.cpp
-    include/cpr/response.cpp
-    include/cpr/redirect.cpp
-    include/cpr/interceptor.cpp
-    include/cpr/ssl_ctx.cpp
-    include/cpr/curlmultiholder.cpp
-    include/cpr/multiperform.cpp
+    # include/cpr/accept_encoding.cpp		#only include when you need
+    # include/cpr/async.cpp
+    # include/cpr/auth.cpp
+    # include/cpr/bearer.cpp
+    # include/cpr/callback.cpp
+    # include/cpr/cert_info.cpp
+    # include/cpr/cookies.cpp
+    # include/cpr/cprtypes.cpp
+    # include/cpr/curl_container.cpp
+    # include/cpr/curlholder.cpp
+    # include/cpr/error.cpp
+    # include/cpr/file.cpp
+    # include/cpr/multipart.cpp
+    # include/cpr/parameters.cpp
+    # include/cpr/payload.cpp
+    # include/cpr/proxies.cpp
+    # include/cpr/proxyauth.cpp
+    # include/cpr/session.cpp
+    # include/cpr/threadpool.cpp
+    # include/cpr/timeout.cpp
+    # include/cpr/unix_socket.cpp
+    # include/cpr/util.cpp
+    # include/cpr/response.cpp
+    # include/cpr/redirect.cpp
+    # include/cpr/interceptor.cpp
+    # include/cpr/ssl_ctx.cpp
+    # include/cpr/curlmultiholder.cpp
+    # include/cpr/multiperform.cpp
 	)
 
 
 
-set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libmem.lib)
-set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib)
+file(GLOB LIBS ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/*.lib )
+set(VULKAN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/vulkan.lib)
 set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/powrprof.lib)
 set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/That_Sky_Mod/lib/release/powrprof.lib)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd -D_ITERATOR_DEBUG_LEVEL=2")
-	set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/libcurl.lib)
-	set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/libmem.lib)
+    file(GLOB LIBS ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/*.lib )
 	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/debug/powrprof.lib)
 endif()
 
@@ -64,27 +63,19 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MD -D_ITERATOR_DEBUG_LEVEL=0")
 endif()
 
-find_library(VULKAN_LIBRARY NAMES vulkan-1 vulkan PATHS $ENV{VULKAN_SDK}/Lib)
-find_path(VULKAN_INCLUDE_DIR NAMES vulkan/vulkan.h PATHS $ENV{VULKAN_SDK}/Include)
-
-
 include_directories(
 	include
 	include/imgui
 	include/libmem
 )
 
-target_compile_features(powrprof PRIVATE cxx_std_17)
-
-target_include_directories(powrprof PRIVATE ${VULKAN_INCLUDE_DIR})
-
+target_compile_features(powrprof PRIVATE cxx_std_20)
 
 target_link_libraries(
 	powrprof
 	ntdll
-	${LIBMEM_PATH}
-	${CURL_PATH}
-	${VULKAN_LIBRARY}
+    ${LIBS}
+	${VULKAN_PATH}
 )
 
 
