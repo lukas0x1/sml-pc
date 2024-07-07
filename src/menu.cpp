@@ -142,17 +142,19 @@ namespace Menu {
             if (ImGui::DragFloat("Window Scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp))
                 ImGui::SetWindowFontScale(window_scale);
             
-            io.FontGlobalScale = 0.95f;
+            io.FontGlobalScale = 0.94f;
             ImGui::DragFloat("Global Scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp);
             
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::Text("Total Fonts: %d", io.Fonts->Fonts.Size, io.Fonts->TexWidth, io.Fonts->TexHeight);
+            ImGui::Text("Total Mods: %d", ModLoader::GetModCount());
             ImGui::SameLine();
-            ImGui::Text("| Total Mods: %d", ModLoader::GetModCount());
-            ImGui::Text("Application Average %.3fms (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("|");
+            ImGui::SameLine();
+            ImGui::Text("Total Fonts: %d", io.Fonts->Fonts.Size, io.Fonts->TexWidth, io.Fonts->TexHeight);
+            ImGui::Text("%.1f FPS / %.3f ms/frame", io.Framerate, 1000.0f / io.Framerate);
         }
         ig::End();
     }
