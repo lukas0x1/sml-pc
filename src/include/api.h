@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #ifdef _MSC_VER
     #define MOD_API __declspec(dllexport)
@@ -47,10 +48,6 @@ public:
 
     bool UnHook(uintptr_t addr);
 
-    bool DefPatch(uintptr_t address, const char* patchBytes);
-
-    bool Patch(uintptr_t address);
-    
-    bool Restore(uintptr_t address);
+    bool Patch(uintptr_t address, const std::vector<unsigned char>& patchBytes, bool toggle = true);
 
 };

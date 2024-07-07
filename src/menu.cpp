@@ -153,22 +153,20 @@ namespace Menu {
             const float MIN_SCALE = 0.3f;
             const float MAX_SCALE = 3.0f;
             static float window_scale = 1.0f;
-            if (ImGui::DragFloat("window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp))
+            if (ImGui::DragFloat("Window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp))
                 ImGui::SetWindowFontScale(window_scale);
-            ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::DragFloat("Global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp);
             
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::Text("Total Fonts: %d", io.Fonts->Fonts.Size);
+            ImGui::Text("Total Mods: %llu", ModLoader::GetModCount());
             ImGui::SameLine();
-            ImGui::Text("| Total Mods: %llu", ModLoader::GetModCount());
-            ImGui::Text(
-                    "Application average %.3f ms/frame (%.1f FPS)",
-                    1000.0f / io.Framerate,
-                    io.Framerate
-            );
+            ImGui::Text("|");
+            ImGui::SameLine();
+            ImGui::Text("Total Fonts: %d", io.Fonts->Fonts.Size);
+            ImGui::Text("FPS: %.1f | %.3f ms/frame", io.Framerate, 1000.0f / io.Framerate);
         }
         ig::End();
     }

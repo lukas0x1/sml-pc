@@ -84,69 +84,33 @@ bool ModApi::UnHook(uintptr_t addr) {
 }
 
 
-bool ModApi::DefPatch(uintptr_t address, const char* patchBytes){
-    
-    std::vector<unsigned char> PatchBytes;
-    std::istringstream byteStream(patchBytes);
+bool ModApi::Patch(uintptr_t address, const std::vector<unsigned char>& patchBytes, bool toggle) {
+    address += skyBase; // Ensure address is relative to Sky_Base
 
-    unsigned int byteValue;
-    while (byteStream >> std::hex >> byteValue) {
-        PatchBytes.push_back(static_cast<unsigned char>(byteValue));
-    }
-    size_t size = PatchBytes.size();
-    patches[address] = PatchBytes;
-
-    // Change the protection to ReadWriteable
-    if (!LM_ProtMemory(address, size,LM_PROT_XRW, NULL)) {
-        std::cerr << "Failed to Change protection at address: " << std::hex << address << std::endl;
-        return false;
-    }
-
-    // Store the original bytes
-    std::vector<unsigned char> originalBytes(size);
-    if (!LM_ReadMemory(address, originalBytes.data(), size)) {
-        std::cerr << "Failed to read memory at address: " << std::hex << address << std::endl;
-        return false;
-    }
-
-    // Save original bytes in the map
-    OriginalBytes[address] = originalBytes;
-
-    return true;
-}
-
-bool ModApi::Patch(uintptr_t address) {
-
-    // Check if the patch bytes are stored in the map
-    auto it = patches.find(address);
-    if (it == patches.end()) {
-        std::cerr << "No Patch bytes found for address: " << std::hex << address << std::endl;
-        return false;
-    }
-
-    std::vector<unsigned char>& PatchBytes = it->second;
-
-    // Write the patch bytes
-    if (!LM_WriteMemory(address, PatchBytes.data(), PatchBytes.size())) {
-        std::cerr << "Failed to write memory at address: " << std::hex << address << std::endl;
-        return false;
-    }
-
-    return true;
-}
-
-bool ModApi::Restore(uintptr_t address) {
-    // Check if the original bytes are stored in the map
+    // Check if the patch is stored in the Original Bytes map
     auto it = OriginalBytes.find(address);
     if (it == OriginalBytes.end()) {
-        std::cerr << "No original bytes found for address: " << std::hex << address << std::endl;
-        return false;
+        size_t size = patchBytes.size();
+        // Change the protection to ReadWriteable
+        if (!LM_ProtMemory(address, size,LM_PROT_XRW, NULL)) {
+            std::cerr << "Failed to Change protection at address: " << std::hex << address << std::endl;
+            return false;
+        }
+
+        // Store the original bytes
+        std::vector<unsigned char> originalBytes(size);
+        if (!LM_ReadMemory(address, originalBytes.data(), size)) {
+            std::cerr << "Failed to read memory at address: " << std::hex << address << std::endl;
+            return false;
+        }
+
+        // Save original bytes in the map
+        OriginalBytes[address] = originalBytes;
     }
 
-    const std::vector<unsigned char>& OriginalBytes = it->second;
-    // Restore the original bytes
-    if (!LM_WriteMemory(address, OriginalBytes.data(), OriginalBytes.size())) {
-        std::cerr << "Failed to restore memory at address: " << std::hex << address << std::endl;
+    const unsigned char* dataPtr = toggle ? patchBytes.data() : OriginalBytes[address].data();
+    if (!LM_WriteMemory(address, dataPtr, OriginalBytes[address].size())) {
+        std::cerr << "Failed to write memory at address: " << std::hex << address << std::endl;
         return false;
     }
 
