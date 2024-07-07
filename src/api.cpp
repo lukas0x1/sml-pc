@@ -19,15 +19,14 @@ std::unordered_map<uintptr_t, std::vector<unsigned char>> patches;
 
 ModApi* ModApi::instance = NULL;
 
-
 ModApi& ModApi::Instance() {
     if(instance == NULL) instance = new ModApi;
     return *instance;
 }
 
-ModApi::ModApi() {
-    skyBase = 0;
+ModApi::ModApi() : skyBase(0), skySize(0) {
 }
+
 
 void ModApi::InitSkyBase() {
 /*
@@ -57,7 +56,6 @@ uintptr_t ModApi::Scan(const char *signature, uintptr_t start, size_t size){
 }
 
 
-
 bool ModApi::Hook(uintptr_t addr, void* newFn, void** oldFn) {
     //todo: check if already hooked，Multiple modification hooks for the same function
     HookDef hook;
@@ -70,6 +68,7 @@ bool ModApi::Hook(uintptr_t addr, void* newFn, void** oldFn) {
     hooks[addr] = hook;
     return true;
 }
+
 
 bool ModApi::UnHook(uintptr_t addr) {
     //todo:

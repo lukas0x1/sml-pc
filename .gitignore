@@ -2,8 +2,10 @@
 build/*
 .vscode/*
 .cache/*
-lib/release/libmem.lib
 lib/debug/libmem.lib
 mod-demo/.cache
 mod-demo/build/*
 That_Sky_Mod
+/.vs
+/lib/release
+/out/build/x64-Debug

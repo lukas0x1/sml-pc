@@ -47,16 +47,14 @@ add_library(
     # include/cpr/multiperform.cpp
 	)
 
-
-
 file(GLOB LIBS ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/*.lib )
 set(VULKAN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/vulkan.lib)
-set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/powrprof.lib)
-set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/That_Sky_Mod/lib/release/powrprof.lib)
+set(COPY_TO_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/powrprof.lib)
+set(COPY_TO_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/debug/powrprof.lib)
+set(COPY_TO_RELEASE_SKY_MOD ${CMAKE_CURRENT_SOURCE_DIR}/That_Sky_Mod/lib/release/powrprof.lib)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd -D_ITERATOR_DEBUG_LEVEL=2")
     file(GLOB LIBS ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/*.lib )
-	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/debug/powrprof.lib)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -78,12 +76,12 @@ target_link_libraries(
 	${VULKAN_PATH}
 )
 
-
 add_custom_command(
 	TARGET powrprof POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_LINKER_FILE:powrprof> ${COPY_TO}
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_LINKER_FILE:powrprof> $<$<CONFIG:Debug>:${COPY_TO_DEBUG}>$<$<CONFIG:Release>:${COPY_TO_RELEASE}>
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_LINKER_FILE:powrprof> $<$<CONFIG:Release>:${COPY_TO_RELEASE_SKY_MOD}>
 )
 
-add_custom_target(BeforeBuild DEPENDS ${COPY_TO})
+add_custom_target(BeforeBuild ALL DEPENDS powrprof)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/mod-demo)

@@ -49,9 +49,7 @@ namespace Menu {
 
     void LoadFontsFromFolder(FontConfig& fontconfig) {
         static const ImWchar ranges[] = {
-        static_cast<ImWchar>(fontconfig.unicodeRangeStart), static_cast<ImWchar>(fontconfig.unicodeRangeEnd),   // Dynamic Unicode range from sml_config.json
-        0  // end of list
-        };
+        static_cast<ImWchar>(fontconfig.unicodeRangeStart), static_cast<ImWchar>(fontconfig.unicodeRangeEnd), 0};
         ImGuiIO& io = ImGui::GetIO();
 
         namespace fs = std::filesystem;
@@ -124,11 +122,12 @@ namespace Menu {
     void SMLMainMenu() {
         char buf[64];
         ig::SetNextWindowSize({200, 0}, ImGuiCond_Once);
+
         if(ig::Begin("SML Main",nullptr,ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::SeparatorText("Mods");
+            ImGui::SeparatorText(("Mods (" + std::to_string(ModLoader::GetModCount()) + ")").c_str());
             ig::BeginTable("##mods", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBody);
             ig::TableSetupColumn("Mod", ImGuiTableColumnFlags_WidthStretch);
-            ig::TableSetupColumn( "Info", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("Info").x);
+            ig::TableSetupColumn("Info", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("Info").x);
 
             for(int i = 0; i < ModLoader::GetModCount(); i++) {
                     snprintf(buf, 64, "%s##check%d", ModLoader::GetModName(i).data(), i);
@@ -143,30 +142,27 @@ namespace Menu {
                     ig::TableNextColumn();
                     HelpMarker(ModLoader::toString(i).c_str());
             }
+
             ig::EndTable();
             ImGui::SeparatorText("Settings");
             ImGuiIO& io = ImGui::GetIO();
             ShowFontSelector();
             ImGui::SameLine();
-            HelpMarker(std::format("Fonts path: {}\nFonts Start Range: {}\nFonts End Ranse: {}\nTotal Fonts: {}\nTexSize: width {}, height {}\nchange sml_config.json as needed", fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd, io.Fonts->Fonts.Size, io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
+            HelpMarker(std::format("Total: {}\nPath: {}\nStart Range: {}\nEnd Range: {}\nSize: {}W / {}H", fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd, io.Fonts->Fonts.Size, io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
             
             const float MIN_SCALE = 0.3f;
             const float MAX_SCALE = 3.0f;
             static float window_scale = 1.0f;
+
             if (ImGui::DragFloat("Window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp))
                 ImGui::SetWindowFontScale(window_scale);
+
             ImGui::DragFloat("Global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp);
             
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
-
-            ImGui::Text("Total Mods: %llu", ModLoader::GetModCount());
-            ImGui::SameLine();
-            ImGui::Text("|");
-            ImGui::SameLine();
-            ImGui::Text("Total Fonts: %d", io.Fonts->Fonts.Size);
-            ImGui::Text("FPS: %.1f | %.3f ms/frame", io.Framerate, 1000.0f / io.Framerate);
+            ImGui::Text("FPS: %.1f / %.3f ms/frame", io.Framerate, 1000.0f / io.Framerate);
         }
         ig::End();
     }
