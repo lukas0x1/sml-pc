@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 
 project(canvas VERSION 0.1.0 LANGUAGES CXX C)
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)     #uncomment if you wanna see compile commands
 
 file(GLOB CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp )
 
@@ -49,19 +49,14 @@ add_library(
 
 
 
-file(GLOB LIBS ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/*.lib )
+# set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib)   #uncomment When Needed
+set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libmem.lib)
 set(VULKAN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/vulkan.lib)
-set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/powrprof.lib)
+# set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/powrprof.lib)   #mod demo is not used rn
 set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/That_Sky_Mod/lib/release/powrprof.lib)
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd -D_ITERATOR_DEBUG_LEVEL=2")
-    file(GLOB LIBS ${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/*.lib )
-	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/debug/powrprof.lib)
-endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MD -D_ITERATOR_DEBUG_LEVEL=0")
-endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MD -D_ITERATOR_DEBUG_LEVEL=0")
+
 
 include_directories(
 	include
@@ -74,7 +69,8 @@ target_compile_features(powrprof PRIVATE cxx_std_20)
 target_link_libraries(
 	powrprof
 	ntdll
-    ${LIBS}
+    # ${CURL_PATH}
+    ${LIBMEM_PATH}
 	${VULKAN_PATH}
 )
 
@@ -84,6 +80,6 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_LINKER_FILE:powrprof> ${COPY_TO}
 )
 
-add_custom_target(BeforeBuild DEPENDS ${COPY_TO})
+# add_custom_target(BeforeBuild DEPENDS ${COPY_TO})
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/mod-demo)
+# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/mod-demo)
