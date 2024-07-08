@@ -249,7 +249,7 @@ DWORD WINAPI hook_thread(PVOID lParam){
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     InitConsole();
     Sleep(3000);
-    clear_screen();
+    //clear_screen();
     return EXIT_SUCCESS;
 }
 
