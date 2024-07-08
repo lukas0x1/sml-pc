@@ -47,6 +47,7 @@ namespace Menu {
         file.close();
     }
 
+
     void LoadFontsFromFolder(FontConfig& fontconfig) {
         static const ImWchar ranges[] = {
         static_cast<ImWchar>(fontconfig.unicodeRangeStart), static_cast<ImWchar>(fontconfig.unicodeRangeEnd),   // Dynamic Unicode range from sml_config.json
@@ -79,6 +80,7 @@ namespace Menu {
         }
     }
 
+
     void ShowFontSelector(){
         ImGuiIO& io = ImGui::GetIO();
         ImFont* font_current = ImGui::GetFont();
@@ -95,6 +97,7 @@ namespace Menu {
         }
     }
 
+
     void InitializeContext(HWND hwnd) {
         if (ig::GetCurrentContext( ))
             return;
@@ -109,6 +112,7 @@ namespace Menu {
         io.IniFilename = io.LogFilename = nullptr;
     }
 
+
     void HelpMarker(const char* description){ 
         ImGui::TextDisabled("(?)");
         if (ImGui::IsItemHovered())
@@ -120,6 +124,7 @@ namespace Menu {
             ImGui::EndTooltip();
         }
     }
+
 
     void SMLMainMenu() {
         char buf[64];
@@ -148,7 +153,7 @@ namespace Menu {
             ImGuiIO& io = ImGui::GetIO();
             ShowFontSelector();
             ImGui::SameLine();
-            HelpMarker(std::format("Total: {}\nPath: {}\nStart Range: {}\nEnd Range: {}\nSize: {}W / {}H\nchange sml_config.json as needed", io.Fonts->Fonts.Size, fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd,  io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
+            HelpMarker(std::format("Total: {}\nPath: {}\nStart Range: {}\nEnd Range: {}\nSize: {}W / {}H\nConfig: sml_config.json", io.Fonts->Fonts.Size, fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd,  io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
             
             const float MIN_SCALE = 0.3f;
             const float MAX_SCALE = 3.0f;
@@ -161,15 +166,11 @@ namespace Menu {
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::Text("Total Mods: %llu", ModLoader::GetModCount());
-            ImGui::SameLine();
-            ImGui::Text("|");
-            ImGui::SameLine();
-            ImGui::Text("Total Fonts: %d", io.Fonts->Fonts.Size);
             ImGui::Text("FPS: %.1f | %.3f ms/frame", io.Framerate, 1000.0f / io.Framerate);
         }
         ig::End();
     }
+
 
     void Render( ) {
         if (!bShowMenu)

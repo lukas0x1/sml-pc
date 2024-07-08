@@ -14,7 +14,6 @@
 #include <xlocale>
 #include "include/api.h"
 
-
 #include "include/layer.h"
 #include "include/menu.hpp"
 #include "include/mod_loader.h"
@@ -82,6 +81,7 @@ void InitConsole(){
     freopen_s(&inputStream, "CONIN$", "r", stdin);
 }
 
+
 void loadWrapper(){
     dllHandle = LoadLibrary("C:\\Windows\\System32\\powrprof.dll");
     if (dllHandle == NULL) {
@@ -101,6 +101,7 @@ void loadWrapper(){
         printf("failed to load POWRPROF.dll");
     }
 }
+
 
 static WNDPROC oWndProc;
 static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -123,7 +124,6 @@ static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
     }
     return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
 }
-
 
 
 void terminateCrashpadHandler() {
@@ -202,8 +202,6 @@ std::wstring GetKeyPathFromKKEY(HKEY key)
 #undef STATUS_BUFFER_TOO_SMALL
 #undef STATUS_SUCCESS
 
-
-
 void clear_screen(char fill = ' ') { 
     COORD tl = {0,0};
     CONSOLE_SCREEN_BUFFER_INFO s;
@@ -214,6 +212,7 @@ void clear_screen(char fill = ' ') {
     FillConsoleOutputAttribute(console, s.wAttributes, cells, tl, &written);
     SetConsoleCursorPosition(console, tl);
 }
+
 
 typedef LSTATUS (__stdcall *PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
 PFN_RegEnumValueA oRegEnumValueA;
@@ -230,7 +229,7 @@ LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpc
         }
         lpValueName[name.size()] = '\0';
 
-        *lpcchValueName = 2048; //max path
+        *lpcchValueName = 2048; // Max Path Length
         lpData = nullptr;
         *lpcbData = 4;
     }
@@ -240,17 +239,17 @@ LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpc
 
 DWORD WINAPI hook_thread(PVOID lParam){
     HWND window = nullptr; 
-    printf("Searching for window \n");
+    printf("Searching for window...\n");
     while(!window){
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); //prone for a race condition (1 second crashes);
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         window = FindWindowA("TgcMainWindow", "Sky");
     } 
-    printf("found window: %p\n", window);
+    printf("Window Found: %p\n", window);
     layer::setup(window);      
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     InitConsole();
     Sleep(3000);
-    clear_screen();
+    //clear_screen();
     return EXIT_SUCCESS;
 }
 
