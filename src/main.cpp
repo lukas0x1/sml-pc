@@ -1,9 +1,8 @@
 #include <chrono>
-
 #include <corecrt_wstring.h>
 #include <string>
 #include <windows.h>
-#include <stdio.h>
+#include <cstdio>
 #include <vulkan/vulkan.h>
 #include <thread>
 #include <dxgi.h>
@@ -18,31 +17,12 @@
 #include "include/menu.hpp"
 #include "include/mod_loader.h"
 #include <tlhelp32.h>
+#include <minhook/MinHook.h>
+#include "include/hooks.hpp"
+#include "include/utils.hpp"
 
 
-HMODULE dllHandle = nullptr;
 std::string g_path;
-
-
-BOOLEAN (*o_GetPwrCapabilities)(PSYSTEM_POWER_CAPABILITIES);
-NTSTATUS (*o_CallNtPowerInformation)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG);
-POWER_PLATFORM_ROLE (*o_PowerDeterminePlatformRole)();
-
-extern "C"
-__declspec(dllexport) BOOLEAN __stdcall GetPwrCapabilities(PSYSTEM_POWER_CAPABILITIES lpspc) {
-    return o_GetPwrCapabilities(lpspc); 
-}
-
-extern "C"
-__declspec(dllexport) NTSTATUS __stdcall CallNtPowerInformation(POWER_INFORMATION_LEVEL InformationLevel, PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength){
-    return o_CallNtPowerInformation(InformationLevel, InputBuffer, InputBufferLength, OutputBuffer, OutputBufferLength);
-}
-
-extern "C"
-__declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
-    return o_PowerDeterminePlatformRole();
-}
-
 
 void InitConsole(){
     FreeConsole();
@@ -81,49 +61,37 @@ void InitConsole(){
     freopen_s(&inputStream, "CONIN$", "r", stdin);
 }
 
-
-void loadWrapper(){
-    dllHandle = LoadLibrary("C:\\Windows\\System32\\powrprof.dll");
-    if (dllHandle == NULL) {
-        dllHandle = LoadLibrary("C:\\Windows\\System32\\POWRPROF.dll");
-    }
-
-    if (dllHandle != NULL) {
-        o_GetPwrCapabilities = (BOOLEAN(*)(PSYSTEM_POWER_CAPABILITIES))GetProcAddress(dllHandle, "GetPwrCapabilities");
-        o_CallNtPowerInformation = (NTSTATUS (*)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG))GetProcAddress(dllHandle, "CallNtPowerInformation");
-        o_PowerDeterminePlatformRole = (POWER_PLATFORM_ROLE (*)())GetProcAddress(dllHandle, "PowerDeterminePlatformRole");
-    
-    if (o_GetPwrCapabilities == nullptr || o_CallNtPowerInformation == nullptr || o_PowerDeterminePlatformRole == nullptr) {
-        printf("Could not locate symbols in powrprof.dll");
-    }
-    }
-    else {
-        printf("failed to load POWRPROF.dll");
-    }
-}
-
-
-static WNDPROC oWndProc;
-static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    if (uMsg == WM_KEYDOWN) {
-        if (wParam == VK_HOME) {
-            Menu::bShowMenu = !Menu::bShowMenu;
-            return 0;
+//static WNDPROC oWndProc;
+/**static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    try {
+        if (uMsg == WM_KEYDOWN) {
+            if (wParam == VK_HOME) {
+                Menu::bShowMenu = !Menu::bShowMenu;
+                return 0;
+            }
+        }
+        LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+        if (Menu::bShowMenu) {
+            if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
+                return ERROR_SUCCESS;
+            }
+            if (ImGui::GetIO().WantCaptureMouse && (uMsg == WM_LBUTTONDOWN ||
+                uMsg == WM_LBUTTONUP || uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP ||
+                uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP || uMsg == WM_MOUSEWHEEL ||
+                uMsg == WM_MOUSEMOVE)) {
+                return ERROR_SUCCESS;
+            }
         }
     }
-    LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    if(Menu::bShowMenu) {
-        if(ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
-            return ERROR_SUCCESS;
-        }
-        if (ImGui::GetIO().WantCaptureMouse && (uMsg == WM_LBUTTONDOWN || 
-                uMsg == WM_LBUTTONUP || uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP || 
-                uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP || uMsg == WM_MOUSEWHEEL || 
-                uMsg == WM_MOUSEMOVE))
-            return ERROR_SUCCESS;
+    catch (const std::exception& e) {
+        printf("Exception: %s\n", e.what());
+    }
+    catch (...) {
+        printf("Unknown exception occurred in WndProc\n");
     }
     return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
-}
+}**/
+
 
 
 void terminateCrashpadHandler() {
@@ -245,11 +213,14 @@ DWORD WINAPI hook_thread(PVOID lParam){
         window = FindWindowA("TgcMainWindow", "Sky");
     } 
     printf("Window Found: %p\n", window);
-    layer::setup(window);      
-    oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
+    //layer::setup(window); //Source of injection error 
+    MH_Initialize( );
+    H::Init();
+
+    //oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     InitConsole();
     Sleep(3000);
-    //clear_screen();
+    clear_screen();
     return EXIT_SUCCESS;
 }
 
@@ -260,7 +231,6 @@ DWORD WINAPI console_thread(LPVOID lpParam){
 
 
 void onAttach(){
-    loadWrapper();
     WCHAR path[MAX_PATH];
     GetModuleFileNameW(NULL, path, MAX_PATH);
     std::wstring ws(path);
@@ -268,7 +238,7 @@ void onAttach(){
     g_path = _path.substr(0, _path.find_last_of("\\/"));
     HMODULE handle = LoadLibrary("advapi32.dll");
     if(handle!= NULL){
-        lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
+        auto fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
         LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t *)&oRegEnumValueA);
         InitConsole();
         terminateCrashpadHandler();
@@ -282,6 +252,13 @@ void onAttach(){
     }
 }
 
+DWORD WINAPI OnProcessDetach(LPVOID lpParam) {
+    H::Free();
+    MH_Uninitialize();
+
+    return 0;
+}
+
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved){
     DisableThreadLibraryCalls(hinstDLL);
@@ -289,10 +266,10 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved){
     switch (fdwReason) {
         case DLL_PROCESS_ATTACH:
             onAttach();
-
+            U::SetRenderingBackend(VULKAN);
             break;
         case DLL_PROCESS_DETACH:
-        
+            OnProcessDetach(NULL);
             break;
     }
     

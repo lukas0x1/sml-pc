@@ -63,6 +63,8 @@ struct DeviceData {
    std::vector<QueueData*> queues;
 };
 
+DeviceData deviceData;
+
 struct QueueData {
   DeviceData *device;
   VkQueue queue;
@@ -173,7 +175,7 @@ static bool CreateDeviceVK( ) {
         create_info.ppEnabledExtensionNames = &instance_extension;
 
         // Create Vulkan Instance without any debug feature
-        vkCreateInstance(&create_info, g_Allocator, &g_Instance);
+        vkCreateInstance(&create_info, g_Allocator, &g_Instance); // Calls this function
         printf("[+] Vulkan: g_Instance: 0x%p\n", g_Instance);
     }
 
@@ -587,7 +589,7 @@ VK_LAYER_EXPORT PFN_vkVoidFunction VKAPI_CALL ModLoader_GetInstanceProcAddr(VkIn
 
 void layer::setup(HWND hwnd){
 
-  if (!CreateDeviceVK( )) {
+	if (!CreateDeviceVK()) { // Create Vulkan Device
     printf("[!] CreateDeviceVK() failed.\n");
     return;
   }
@@ -595,10 +597,8 @@ void layer::setup(HWND hwnd){
   g_Hwnd = hwnd;
 
 
+
 }
-
-
-
 
 static void CleanupRenderTarget( ) {
     for (uint32_t i = 0; i < RTL_NUMBER_OF(g_Frames); ++i) {

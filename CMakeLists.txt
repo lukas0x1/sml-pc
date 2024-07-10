@@ -2,22 +2,28 @@ cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 
 project(canvas VERSION 0.1.0 LANGUAGES CXX C)
 
-# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)     #uncomment if you wanna see compile commands
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MD -D_ITERATOR_DEBUG_LEVEL=0")
 
-file(GLOB CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp )
+# Uncomment if you want to see compile commands
+# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Source files
+file(GLOB CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
 add_library(
-	powrprof
-	SHARED
-	${CPP_SRC}
-	include/imgui/imgui.cpp
-	include/imgui/imgui_demo.cpp
-	include/imgui/imgui_draw.cpp
-	include/imgui/imgui_impl_vulkan.cpp
-	include/imgui/imgui_impl_win32.cpp
-	include/imgui/imgui_tables.cpp
-	include/imgui/imgui_widgets.cpp
-    # include/cpr/accept_encoding.cpp		#only include when you need
+    canvas
+    SHARED
+    ${CPP_SRC}
+    include/imgui/imgui.cpp
+    include/imgui/imgui_demo.cpp
+    include/imgui/imgui_draw.cpp
+    include/imgui/imgui_impl_vulkan.cpp
+    include/imgui/imgui_impl_win32.cpp
+    include/imgui/imgui_tables.cpp
+    include/imgui/imgui_widgets.cpp
+    # include/cpr/accept_encoding.cpp       #only include when you need
     # include/cpr/async.cpp
     # include/cpr/auth.cpp
     # include/cpr/bearer.cpp
@@ -45,41 +51,38 @@ add_library(
     # include/cpr/ssl_ctx.cpp
     # include/cpr/curlmultiholder.cpp
     # include/cpr/multiperform.cpp
-	)
+)
 
-
-
-# set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib)   #uncomment When Needed
+# Paths to libraries
+# set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib)   # Uncomment when needed
 set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libmem.lib)
 set(VULKAN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/vulkan.lib)
-# set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/powrprof.lib)   #mod demo is not used rn
+set(MINHOOK_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/minhook.lib)
 set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/That_Sky_Mod/lib/release/powrprof.lib)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MD -D_ITERATOR_DEBUG_LEVEL=0")
-
-
+# Include directories
 include_directories(
-	include
-	include/imgui
-	include/libmem
+    include
+    include/imgui
+    include/libmem
+    include/vulkan
+    include/minhook/include
 )
 
-target_compile_features(powrprof PRIVATE cxx_std_20)
-
+# Link libraries
 target_link_libraries(
-	powrprof
-	ntdll
+    canvas
+    ntdll
     # ${CURL_PATH}
     ${LIBMEM_PATH}
-	${VULKAN_PATH}
+    ${VULKAN_PATH}
+    ${MINHOOK_PATH}
 )
 
-
-add_custom_command(
-	TARGET powrprof POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_LINKER_FILE:powrprof> ${COPY_TO}
+# Add source files for unresolved external symbols
+file(GLOB ADDITIONAL_SRC
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hooks.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils.cpp
 )
 
-# add_custom_target(BeforeBuild DEPENDS ${COPY_TO})
-
-# add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/mod-demo)
+target_sources(canvas PRIVATE ${ADDITIONAL_SRC})
