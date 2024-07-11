@@ -15,7 +15,8 @@
 - Build the project
 
 # How to use
-- Copy the `sml_config.json` file and `mods` folder to the game directory
+- Download SML Injected.zip from the releases and extract it
+- Copy the `sml_config.json` file and `mods` folder to the game directory for Sky: Children of the light
 - Inject canvas.dll into the game using your favorite injector
 - Need a injector? Use [FateInjector](https://github.com/fligger/FateInjector)
 
