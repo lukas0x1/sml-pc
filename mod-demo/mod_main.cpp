@@ -15,28 +15,25 @@ void GetModInfo(ModInfo& info) {
     info.name = MOD_NAME;
     info.description = MOD_DESCRIPTION;
     info.version = MOD_VERSION;
-} 
+}
 
 
 void Start() {
 
 }
-    
-void onEnable(){
+
+void onEnable() {
 
 }
 
-void onDisable(){
-    
+void onDisable() {
+
 }
 
 void Render() {
-    if(ImGui::Begin(MOD_NAME)) {
-        if(ImGui::Button("Login With Local Account", {-1, 0})) {
-            uintptr_t accountManager = *(uintptr_t*)(gv::gamePtr + 0x1D8);
-            uint32_t* accountType = (uint32_t*)(accountManager + 0xf64);
-            *accountType = 0;
-        }
+    if (ImGui::Begin(MOD_NAME)) {
+		ImGui::Text("Well, now we have SML-Injected ;)");
+		ImGui::SetWindowSize(ImVec2(300, 100));
         ImGui::End();
     }
 

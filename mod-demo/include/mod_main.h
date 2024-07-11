@@ -8,7 +8,6 @@
 #define MOD_DESCRIPTION         "A demo mod for the mod loader"
 #define MOD_VERSION             "1.0.0"
 
-
 extern "C" {
     void EXPORT GetModInfo(ModInfo& info);
     

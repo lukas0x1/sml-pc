@@ -13,10 +13,11 @@ add_library(
 )
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS "True")
-set(POWRPROF_PATH ${CMAKE_CURRENT_SOURCE_DIR}/powrprof/release/powrprof.lib)
+set(CANVAS_PATH ${CMAKE_CURRENT_SOURCE_DIR}/canvas/release/canvas.lib)
+set(MINHOOK_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/minhook.lib)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MDd -D_ITERATOR_DEBUG_LEVEL=2")
-	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/powrprof/debug/powrprof.lib)
+	set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/canvas/debug/canvas.lib)
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -24,10 +25,10 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 
-target_compile_features(demo PRIVATE cxx_std_17)
+target_compile_features(demo PRIVATE cxx_std_20)
 
 
 target_link_libraries(
 	demo
-	${POWRPROF_PATH}
+	${CANVAS_PATH}
 )

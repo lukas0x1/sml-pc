@@ -86,3 +86,6 @@ file(GLOB ADDITIONAL_SRC
 )
 
 target_sources(canvas PRIVATE ${ADDITIONAL_SRC})
+
+add_custom_target(BeforeBuild DEPENDS ${COPY_TO})
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/mod-demo)
