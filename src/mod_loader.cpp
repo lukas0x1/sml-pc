@@ -35,7 +35,7 @@ void ModLoader::LoadMods() {
             if (fileExtension == ".dll") { // is dll file
                 std::cout << "Attempting to load DLL: " << filePath << std::endl;
 
-                HMODULE hModule = LoadLibraryEx(filePath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR); // load dll
+                HMODULE hModule = LoadLibraryA(filePath.c_str()); // load dll
                 if (hModule != nullptr) {
                     mods.emplace_back(hModule);
                     ModItem& item = mods.back();
