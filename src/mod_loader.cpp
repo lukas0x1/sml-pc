@@ -6,7 +6,6 @@
 
 #include "include/mod_loader.h"
 
-
 std::vector<ModItem> ModLoader::mods;
 
 void ModLoader::LoadMods() {
@@ -65,6 +64,7 @@ void ModLoader::Render(int index) {
     if (mods[index].enabled && mods[index].render != nullptr)
         mods[index].render();
 }
+
 void ModLoader::EnableMod(int index) {
     if (mods[index].onEnable != nullptr)
         mods[index].onEnable();
@@ -83,12 +83,12 @@ std::string_view ModLoader::GetModName(int index) {
     return mods[index].info.name;
 }
 
-
 void ModLoader::RenderAll() {
     for (int i = 0; i < mods.size(); i++) {
         Render(i);
     }
 }
+
 std::string ModLoader::toString(int index) {
     std::stringstream ss;
 

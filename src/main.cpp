@@ -21,10 +21,10 @@
 #include "include/hooks.hpp"
 #include "include/utils.hpp"
 
-
 std::string g_path;
 
-void InitConsole(){
+// Initializes the console window
+void InitConsole() {
     FreeConsole();
     AllocConsole();
     SetConsoleTitle("SML Console");
@@ -34,18 +34,16 @@ void InitConsole(){
         SetConsoleOutputCP(CP_UTF8);
     }
 
-    auto hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleMode(hStdout, ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-    // Disable Ctrl+C handling
-    SetConsoleCtrlHandler(NULL, TRUE);
+    SetConsoleCtrlHandler(NULL, TRUE); // Disable Ctrl+C handling
 
     CONSOLE_FONT_INFOEX cfi;
     cfi.cbSize = sizeof(cfi);
     GetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
 
-    // Change to a more readable font if user has one of the default eyesore fonts
-    if (wcscmp(cfi.FaceName, L"Terminal") == 0 || wcscmp(cfi.FaceName, L"Courier New") || (cfi.FontFamily & TMPF_VECTOR) == 0) {
-        cfi.cbSize = sizeof(cfi);
+    // Change to a more readable font if the user has one of the default eyesore fonts
+    if (wcscmp(cfi.FaceName, L"Terminal") == 0 || wcscmp(cfi.FaceName, L"Courier New") == 0 || (cfi.FontFamily & TMPF_VECTOR) == 0) {
         cfi.nFont = 0;
         cfi.dwFontSize.X = 0;
         cfi.dwFontSize.Y = 14;
@@ -55,56 +53,21 @@ void InitConsole(){
         SetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
     }
 
-    FILE * outputStream;
-    freopen_s(&outputStream, "CONOUT$", "w", stdout);
-    FILE* inputStream;
-    freopen_s(&inputStream, "CONIN$", "r", stdin);
+    freopen_s(reinterpret_cast <FILE**> (stdout), "CONOUT$", "w", stdout);
+    freopen_s(reinterpret_cast <FILE**> (stdin), "CONIN$", "r", stdin);
 }
 
-//static WNDPROC oWndProc;
-/**static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    try {
-        if (uMsg == WM_KEYDOWN) {
-            if (wParam == VK_HOME) {
-                Menu::bShowMenu = !Menu::bShowMenu;
-                return 0;
-            }
-        }
-        LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-        if (Menu::bShowMenu) {
-            if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
-                return ERROR_SUCCESS;
-            }
-            if (ImGui::GetIO().WantCaptureMouse && (uMsg == WM_LBUTTONDOWN ||
-                uMsg == WM_LBUTTONUP || uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP ||
-                uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP || uMsg == WM_MOUSEWHEEL ||
-                uMsg == WM_MOUSEMOVE)) {
-                return ERROR_SUCCESS;
-            }
-        }
-    }
-    catch (const std::exception& e) {
-        printf("Exception: %s\n", e.what());
-    }
-    catch (...) {
-        printf("Unknown exception occurred in WndProc\n");
-    }
-    return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
-}**/
-
-
-
-void terminateCrashpadHandler() {
-
+// Terminates the crashpad handler process
+void TerminateCrashpadHandler() {
     PROCESSENTRY32 entry;
     entry.dwSize = sizeof(PROCESSENTRY32);
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
-    if (Process32First(snapshot, &entry) == TRUE) {
-        while (Process32Next(snapshot, &entry) == TRUE) {
+
+    if (Process32First(snapshot, &entry)) {
+        while (Process32Next(snapshot, &entry)) {
             if (lstrcmp(entry.szExeFile, "crashpad_handler.exe") == 0) {
                 HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID);
-
-                if (hProcess!= NULL) {
+                if (hProcess != NULL) {
                     TerminateProcess(hProcess, 0);
                     CloseHandle(hProcess);
                 }
@@ -115,42 +78,38 @@ void terminateCrashpadHandler() {
 }
 
 #ifndef STATUS_SUCCESS
-#define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
+#define STATUS_SUCCESS ((NTSTATUS) 0x00000000L)
 #endif
 
 #ifndef STATUS_BUFFER_TOO_SMALL
-#define STATUS_BUFFER_TOO_SMALL ((NTSTATUS)0xC0000023L)
+#define STATUS_BUFFER_TOO_SMALL ((NTSTATUS) 0xC0000023L)
 #endif
 
-std::wstring GetKeyPathFromKKEY(HKEY key)
-{
+// Gets the path of a registry key
+std::wstring GetKeyPathFromKKEY(HKEY key) {
     std::wstring keyPath;
-    if (key != NULL)
-    {
+    if (key != NULL) {
         HMODULE dll = LoadLibrary("ntdll.dll");
         if (dll != NULL) {
-            typedef DWORD (__stdcall *NtQueryKeyType)(
-                HANDLE  KeyHandle,
+            typedef DWORD(__stdcall* NtQueryKeyType)(
+                HANDLE KeyHandle,
                 int KeyInformationClass,
-                PVOID  KeyInformation,
-                ULONG  Length,
-                PULONG  ResultLength);
+                PVOID KeyInformation,
+                ULONG Length,
+                PULONG ResultLength);
 
-            NtQueryKeyType func = reinterpret_cast<NtQueryKeyType>(::GetProcAddress(dll, "NtQueryKey"));
+            NtQueryKeyType func = reinterpret_cast <NtQueryKeyType> (::GetProcAddress(dll, "NtQueryKey"));
 
             if (func != NULL) {
                 DWORD size = 0;
                 DWORD result = 0;
                 result = func(key, 3, 0, 0, &size);
-                if (result == STATUS_BUFFER_TOO_SMALL)
-                {
+                if (result == STATUS_BUFFER_TOO_SMALL) {
                     size = size + 2;
-                    wchar_t* buffer = new (std::nothrow) wchar_t[size/sizeof(wchar_t)]; // size is in bytes
-                    if (buffer != NULL)
-                    {
+                    wchar_t* buffer = new(std::nothrow) wchar_t[size / sizeof(wchar_t)]; // size is in bytes
+                    if (buffer != NULL) {
                         result = func(key, 3, buffer, size, &size);
-                        if (result == STATUS_SUCCESS)
-                        {
+                        if (result == STATUS_SUCCESS) {
                             buffer[size / sizeof(wchar_t)] = L'\0';
                             keyPath = std::wstring(buffer + 2);
                         }
@@ -166,14 +125,17 @@ std::wstring GetKeyPathFromKKEY(HKEY key)
     return keyPath;
 }
 
-
 #undef STATUS_BUFFER_TOO_SMALL
 #undef STATUS_SUCCESS
 
-void clear_screen(char fill = ' ') { 
-    COORD tl = {0,0};
+// Clears the console screen
+void ClearScreen(char fill = ' ') {
+    COORD tl = {
+       0,
+       0
+    };
     CONSOLE_SCREEN_BUFFER_INFO s;
-    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);   
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleScreenBufferInfo(console, &s);
     DWORD written, cells = s.dwSize.X * s.dwSize.Y;
     FillConsoleOutputCharacter(console, fill, cells, tl, &written);
@@ -181,19 +143,19 @@ void clear_screen(char fill = ' ') {
     SetConsoleCursorPosition(console, tl);
 }
 
-
-typedef LSTATUS (__stdcall *PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
+// Hook for RegEnumValueA
+typedef LSTATUS(__stdcall* PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
 PFN_RegEnumValueA oRegEnumValueA;
-LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData){
+LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) {
 
     std::wstring path = GetKeyPathFromKKEY(hKey);
     std::string name = g_path + "\\sml_config.json";
-    
-    LSTATUS result = oRegEnumValueA(hKey, dwIndex, lpValueName,lpcchValueName ,lpReserved, lpType, lpData, lpcbData);
-    if(wcscmp(path.c_str(), L"\\REGISTRY\\MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers") == 0 && dwIndex == 0 ){
+
+    LSTATUS result = oRegEnumValueA(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData);
+    if (wcscmp(path.c_str(), L"\\REGISTRY\\MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers") == 0 && dwIndex == 0) {
 
         for (size_t i = 0; i < name.size(); i++) {
-        lpValueName[i] = name[i];
+            lpValueName[i] = name[i];
         }
         lpValueName[name.size()] = '\0';
 
@@ -204,75 +166,72 @@ LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpc
     return result;
 }
 
-
-DWORD WINAPI hook_thread(PVOID lParam){
-    HWND window = nullptr; 
+// Hook thread
+DWORD WINAPI HookThread(PVOID lParam) {
+    HWND window = nullptr;
     printf("Searching for window...\n");
-    while(!window){
+    while (!window) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         window = FindWindowA("TgcMainWindow", "Sky");
-    } 
+    }
     printf("Window Found: %p\n", window);
-    //layer::setup(window); //Source of injection error 
-    MH_Initialize( );
+    MH_Initialize();
     H::Init();
-
-    //oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     InitConsole();
     Sleep(3000);
-    clear_screen();
+    ClearScreen();
     return EXIT_SUCCESS;
 }
 
-DWORD WINAPI console_thread(LPVOID lpParam){
-    
+// Console thread
+DWORD WINAPI ConsoleThread(LPVOID lpParam) {
     return EXIT_SUCCESS;
 }
 
-
-void onAttach(){
+// Attaches the DLL
+void OnAttach() {
     WCHAR path[MAX_PATH];
     GetModuleFileNameW(NULL, path, MAX_PATH);
     std::wstring ws(path);
     std::string _path(ws.begin(), ws.end());
     g_path = _path.substr(0, _path.find_last_of("\\/"));
+
     HMODULE handle = LoadLibrary("advapi32.dll");
-    if(handle!= NULL){
-        auto fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
-        LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t *)&oRegEnumValueA);
+    if (handle != NULL) {
+        auto fnRegEnumValue = reinterpret_cast <lm_address_t> (GetProcAddress(handle, "RegEnumValueA"));
+        LM_HookCode(fnRegEnumValue, reinterpret_cast <lm_address_t> (&hkRegEnumValueA), reinterpret_cast <lm_address_t*> (&oRegEnumValueA));
         InitConsole();
-        terminateCrashpadHandler();
+        TerminateCrashpadHandler();
         ModApi::Instance().InitSkyBase();
         ModLoader::LoadMods();
-        CreateThread(NULL, 0, console_thread, NULL, 0, NULL);
-        CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);
+        CreateThread(NULL, 0, ConsoleThread, NULL, 0, NULL);
+        CreateThread(NULL, 0, HookThread, nullptr, 0, NULL);
     }
     else {
         printf("Failed to load advapi32.dll");
     }
 }
 
+// Detaches the DLL
 DWORD WINAPI OnProcessDetach(LPVOID lpParam) {
     H::Free();
     MH_Uninitialize();
-
     return 0;
 }
 
-
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved){
+// DLL entry point
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     DisableThreadLibraryCalls(hinstDLL);
 
     switch (fdwReason) {
-        case DLL_PROCESS_ATTACH:
-            onAttach();
-            U::SetRenderingBackend(VULKAN);
-            break;
-        case DLL_PROCESS_DETACH:
-            OnProcessDetach(NULL);
-            break;
+    case DLL_PROCESS_ATTACH:
+        OnAttach();
+        U::SetRenderingBackend(VULKAN);
+        break;
+    case DLL_PROCESS_DETACH:
+        OnProcessDetach(NULL);
+        break;
     }
-    
-    return TRUE;
 
+    return TRUE;
 }
