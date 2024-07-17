@@ -7,6 +7,7 @@
 #include "include/menu.hpp"
 #include "include/mod_loader.h"
 #include "include/json.hpp"
+#include <cpr/cpr.h>
 
 using json = nlohmann::json;
 

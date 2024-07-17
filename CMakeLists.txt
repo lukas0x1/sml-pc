@@ -3,13 +3,16 @@ cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 project(canvas VERSION 0.1.0 LANGUAGES CXX C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)     #uncomment if you wanna see compile commands
+add_definitions(-DCURL_STATICLIB)
 
 file(GLOB CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp )
+file(GLOB CPR_SRC ${CMAKE_CURRENT_SOURCE_DIR}/include/cpr/*.cpp )
 
 add_library(
 	powrprof
 	SHARED
 	${CPP_SRC}
+    ${CPR_SRC}
 	include/imgui/imgui.cpp
 	include/imgui/imgui_demo.cpp
 	include/imgui/imgui_draw.cpp
@@ -17,34 +20,6 @@ add_library(
 	include/imgui/imgui_impl_win32.cpp
 	include/imgui/imgui_tables.cpp
 	include/imgui/imgui_widgets.cpp
-    # include/cpr/accept_encoding.cpp		#only include when you need
-    # include/cpr/async.cpp
-    # include/cpr/auth.cpp
-    # include/cpr/bearer.cpp
-    # include/cpr/callback.cpp
-    # include/cpr/cert_info.cpp
-    # include/cpr/cookies.cpp
-    # include/cpr/cprtypes.cpp
-    # include/cpr/curl_container.cpp
-    # include/cpr/curlholder.cpp
-    # include/cpr/error.cpp
-    # include/cpr/file.cpp
-    # include/cpr/multipart.cpp
-    # include/cpr/parameters.cpp
-    # include/cpr/payload.cpp
-    # include/cpr/proxies.cpp
-    # include/cpr/proxyauth.cpp
-    # include/cpr/session.cpp
-    # include/cpr/threadpool.cpp
-    # include/cpr/timeout.cpp
-    # include/cpr/unix_socket.cpp
-    # include/cpr/util.cpp
-    # include/cpr/response.cpp
-    # include/cpr/redirect.cpp
-    # include/cpr/interceptor.cpp
-    # include/cpr/ssl_ctx.cpp
-    # include/cpr/curlmultiholder.cpp
-    # include/cpr/multiperform.cpp
 	)
 
 
@@ -54,7 +29,7 @@ set(LIBS
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/vulkan.lib
     # ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libmem.lib
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/MT/libmem.lib   #targeting the MT build
-    # ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib   #uncomment When Needed
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl_a.lib   #uncomment When Needed
 )
 # set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/powrprof.lib)   #mod demo is not used rn
 set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/That_Sky_Mod/lib/release/powrprof.lib)
@@ -77,6 +52,10 @@ set_target_properties(powrprof PROPERTIES
 target_link_libraries(
 	powrprof
 	ntdll
+    Ws2_32
+    crypt32
+    Normaliz
+    Wldap32
     ${LIBS}
 )
 
