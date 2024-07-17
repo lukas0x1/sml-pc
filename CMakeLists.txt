@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20.0 FATAL_ERROR)
 
 project(canvas VERSION 0.1.0 LANGUAGES CXX C)
 
-# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)     #uncomment if you wanna see compile commands
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)     #uncomment if you wanna see compile commands
 
 file(GLOB CPP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp )
 
@@ -49,13 +49,17 @@ add_library(
 
 
 
-# set(CURL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib)   #uncomment When Needed
-set(LIBMEM_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libmem.lib)
 set(VULKAN_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/vulkan.lib)
+set(LIBS 
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/vulkan.lib
+    # ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libmem.lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/MT/libmem.lib   #targeting the MT build
+    # ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib   #uncomment When Needed
+)
 # set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/powrprof.lib)   #mod demo is not used rn
 set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/That_Sky_Mod/lib/release/powrprof.lib)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MD -D_ITERATOR_DEBUG_LEVEL=0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT -D_ITERATOR_DEBUG_LEVEL=0")
 
 
 include_directories(
@@ -66,12 +70,14 @@ include_directories(
 
 target_compile_features(powrprof PRIVATE cxx_std_20)
 
+set_target_properties(powrprof PROPERTIES
+    MSVC_RUNTIME_LIBRARY "MultiThreaded"
+)
+
 target_link_libraries(
 	powrprof
 	ntdll
-    # ${CURL_PATH}
-    ${LIBMEM_PATH}
-	${VULKAN_PATH}
+    ${LIBS}
 )
 
 

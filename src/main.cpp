@@ -75,10 +75,12 @@ void InitConsole(){
         SetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
     }
 
-    FILE * outputStream;
-    freopen_s(&outputStream, "CONOUT$", "w", stdout);
     FILE* inputStream;
     freopen_s(&inputStream, "CONIN$", "r", stdin);
+    FILE * outputStream;
+    freopen_s(&outputStream, "CONOUT$", "w", stdout);
+    FILE *errorStream;
+    freopen_s(&errorStream, "CONOUT$", "w", stderr);
 }
 
 
