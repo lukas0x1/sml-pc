@@ -14,7 +14,7 @@ typedef void (*StartFn)();
 typedef void (*GetModInfoFn)(ModInfo& info);
 typedef void (*RenderFn)();
 
-enum Fn_Idx{
+enum Fn_Idx {
     START_FN = 0,
     GET_MOD_INFO_FN,
     RENDER_FN,

@@ -41,13 +41,23 @@ public:
     uintptr_t GetSkyBase();
     uintptr_t GetSkySize();
 
-    uintptr_t Scan(const char *signature);
-    uintptr_t Scan(const char *signature, uintptr_t start, size_t size);
+    uintptr_t Scan(const char* signature);
+    uintptr_t Scan(const char* signature, uintptr_t start, size_t size);
+
+    uintptr_t ScanPattern(lm_bytearr_t pattern, const char* masking);
+    uintptr_t ScanPattern(lm_bytearr_t pattern, const char* masking, uintptr_t start, size_t size);
+
+    uintptr_t ScanData(lm_bytearr_t data, size_t scansize);
+    uintptr_t ScanData(lm_bytearr_t data, size_t size, uintptr_t start, size_t scansize);
 
     bool Hook(uintptr_t addr, void* newFn, void** oldFn);
+    bool Patch(uintptr_t address, const std::vector<unsigned char>& patchBytes, bool toggle = true);
+    bool Unpatch(uintptr_t address, const std::vector<unsigned char>& unpatchBytes);
+
+    bool FastHook(uintptr_t addr, void* newFn, void** oldFn);
+    bool FastPatch(uintptr_t address, const std::vector<unsigned char>& patchBytes, bool toggle = true);
+    bool FastUnpatch(uintptr_t address, const std::vector<unsigned char>& unpatchBytes);
 
     bool UnHook(uintptr_t addr);
-
-    bool Patch(uintptr_t address, const std::vector<unsigned char>& patchBytes, bool toggle = true);
 
 };

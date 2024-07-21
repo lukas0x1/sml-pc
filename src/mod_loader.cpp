@@ -90,14 +90,13 @@ void ModLoader::RenderAll() {
 }
 std::string ModLoader::toString(int index) {
     std::stringstream ss;
-    
-    ss << "Mod Information" << "\n";
+
+    ss << "Information" << "\n";
     ss << "Name: " << mods[index].info.name << "\n";
     ss << "Version: " << mods[index].info.version << "\n";
     ss << "Author: " << mods[index].info.author << "\n";
-    ss << "Description: " << mods[index].info.description << "\n";
-    // ss << "GetModInfo: " << mods[index].getInfo << "\n";
+    ss << "Details: " << mods[index].info.description << "\n";
+    //ss << "GetModInfo: " << mods[index].getInfo << "\n";
     // ss << "Render: " << mods[index].render << "\n";
     return ss.str();
 }
-

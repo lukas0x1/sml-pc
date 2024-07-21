@@ -24,30 +24,30 @@ HMODULE dllHandle = nullptr;
 std::string g_path;
 
 
-BOOLEAN (*o_GetPwrCapabilities)(PSYSTEM_POWER_CAPABILITIES);
-NTSTATUS (*o_CallNtPowerInformation)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG);
-POWER_PLATFORM_ROLE (*o_PowerDeterminePlatformRole)();
+BOOLEAN(*o_GetPwrCapabilities)(PSYSTEM_POWER_CAPABILITIES);
+NTSTATUS(*o_CallNtPowerInformation)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG);
+POWER_PLATFORM_ROLE(*o_PowerDeterminePlatformRole)();
 
 extern "C"
 __declspec(dllexport) BOOLEAN __stdcall GetPwrCapabilities(PSYSTEM_POWER_CAPABILITIES lpspc) {
-    return o_GetPwrCapabilities(lpspc); 
+    return o_GetPwrCapabilities(lpspc);
 }
 
 extern "C"
-__declspec(dllexport) NTSTATUS __stdcall CallNtPowerInformation(POWER_INFORMATION_LEVEL InformationLevel, PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength){
+__declspec(dllexport) NTSTATUS __stdcall CallNtPowerInformation(POWER_INFORMATION_LEVEL InformationLevel, PVOID InputBuffer, ULONG InputBufferLength, PVOID OutputBuffer, ULONG OutputBufferLength) {
     return o_CallNtPowerInformation(InformationLevel, InputBuffer, InputBufferLength, OutputBuffer, OutputBufferLength);
 }
 
 extern "C"
-__declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
+__declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole() {
     return o_PowerDeterminePlatformRole();
 }
 
 
-void InitConsole(){
+void InitConsole() {
     FreeConsole();
     AllocConsole();
-    SetConsoleTitle("SML Console");
+    SetConsoleTitle("SML Console - 1.02MT - TgcMainWindow::VulkanRendering");
 
     if (IsValidCodePage(CP_UTF8)) {
         SetConsoleCP(CP_UTF8);
@@ -77,14 +77,14 @@ void InitConsole(){
 
     FILE* inputStream;
     freopen_s(&inputStream, "CONIN$", "r", stdin);
-    FILE * outputStream;
+    FILE* outputStream;
     freopen_s(&outputStream, "CONOUT$", "w", stdout);
-    FILE *errorStream;
+    FILE* errorStream;
     freopen_s(&errorStream, "CONOUT$", "w", stderr);
 }
 
 
-void loadWrapper(){
+void loadWrapper() {
     dllHandle = LoadLibrary("C:\\Windows\\System32\\powrprof.dll");
     if (dllHandle == NULL) {
         dllHandle = LoadLibrary("C:\\Windows\\System32\\POWRPROF.dll");
@@ -92,12 +92,12 @@ void loadWrapper(){
 
     if (dllHandle != NULL) {
         o_GetPwrCapabilities = (BOOLEAN(*)(PSYSTEM_POWER_CAPABILITIES))GetProcAddress(dllHandle, "GetPwrCapabilities");
-        o_CallNtPowerInformation = (NTSTATUS (*)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG))GetProcAddress(dllHandle, "CallNtPowerInformation");
-        o_PowerDeterminePlatformRole = (POWER_PLATFORM_ROLE (*)())GetProcAddress(dllHandle, "PowerDeterminePlatformRole");
-    
-    if (o_GetPwrCapabilities == nullptr || o_CallNtPowerInformation == nullptr || o_PowerDeterminePlatformRole == nullptr) {
-        printf("Could not locate symbols in powrprof.dll");
-    }
+        o_CallNtPowerInformation = (NTSTATUS(*)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG))GetProcAddress(dllHandle, "CallNtPowerInformation");
+        o_PowerDeterminePlatformRole = (POWER_PLATFORM_ROLE(*)())GetProcAddress(dllHandle, "PowerDeterminePlatformRole");
+
+        if (o_GetPwrCapabilities == nullptr || o_CallNtPowerInformation == nullptr || o_PowerDeterminePlatformRole == nullptr) {
+            printf("Could not locate symbols in powrprof.dll");
+        }
     }
     else {
         printf("failed to load POWRPROF.dll");
@@ -114,14 +114,14 @@ static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         }
     }
     LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-    if(Menu::bShowMenu) {
-        if(ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
+    if (Menu::bShowMenu) {
+        if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
             return ERROR_SUCCESS;
         }
-        if (ImGui::GetIO().WantCaptureMouse && (uMsg == WM_LBUTTONDOWN || 
-                uMsg == WM_LBUTTONUP || uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP || 
-                uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP || uMsg == WM_MOUSEWHEEL || 
-                uMsg == WM_MOUSEMOVE))
+        if (ImGui::GetIO().WantCaptureMouse && (uMsg == WM_LBUTTONDOWN ||
+            uMsg == WM_LBUTTONUP || uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP ||
+            uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP || uMsg == WM_MOUSEWHEEL ||
+            uMsg == WM_MOUSEMOVE))
             return ERROR_SUCCESS;
     }
     return CallWindowProc(oWndProc, hWnd, uMsg, wParam, lParam);
@@ -138,9 +138,10 @@ void terminateCrashpadHandler() {
             if (lstrcmp(entry.szExeFile, "crashpad_handler.exe") == 0) {
                 HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID);
 
-                if (hProcess!= NULL) {
+                if (hProcess != NULL) {
                     TerminateProcess(hProcess, 0);
                     CloseHandle(hProcess);
+                    printf("Detected and closed crashpad_handler.exe");
                 }
             }
         }
@@ -163,7 +164,7 @@ std::wstring GetKeyPathFromKKEY(HKEY key)
     {
         HMODULE dll = LoadLibrary("ntdll.dll");
         if (dll != NULL) {
-            typedef DWORD (__stdcall *NtQueryKeyType)(
+            typedef DWORD(__stdcall* NtQueryKeyType)(
                 HANDLE  KeyHandle,
                 int KeyInformationClass,
                 PVOID  KeyInformation,
@@ -179,7 +180,7 @@ std::wstring GetKeyPathFromKKEY(HKEY key)
                 if (result == STATUS_BUFFER_TOO_SMALL)
                 {
                     size = size + 2;
-                    wchar_t* buffer = new (std::nothrow) wchar_t[size/sizeof(wchar_t)]; // size is in bytes
+                    wchar_t* buffer = new (std::nothrow) wchar_t[size / sizeof(wchar_t)]; // size is in bytes
                     if (buffer != NULL)
                     {
                         result = func(key, 3, buffer, size, &size);
@@ -204,10 +205,10 @@ std::wstring GetKeyPathFromKKEY(HKEY key)
 #undef STATUS_BUFFER_TOO_SMALL
 #undef STATUS_SUCCESS
 
-void clear_screen(char fill = ' ') { 
-    COORD tl = {0,0};
+void clear_screen(char fill = ' ') {
+    COORD tl = { 0,0 };
     CONSOLE_SCREEN_BUFFER_INFO s;
-    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);   
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleScreenBufferInfo(console, &s);
     DWORD written, cells = s.dwSize.X * s.dwSize.Y;
     FillConsoleOutputCharacter(console, fill, cells, tl, &written);
@@ -216,18 +217,18 @@ void clear_screen(char fill = ' ') {
 }
 
 
-typedef LSTATUS (__stdcall *PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
+typedef LSTATUS(__stdcall* PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
 PFN_RegEnumValueA oRegEnumValueA;
-LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData){
+LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData) {
 
     std::wstring path = GetKeyPathFromKKEY(hKey);
     std::string name = g_path + "\\sml_config.json";
-    
-    LSTATUS result = oRegEnumValueA(hKey, dwIndex, lpValueName,lpcchValueName ,lpReserved, lpType, lpData, lpcbData);
-    if(wcscmp(path.c_str(), L"\\REGISTRY\\MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers") == 0 && dwIndex == 0 ){
+
+    LSTATUS result = oRegEnumValueA(hKey, dwIndex, lpValueName, lpcchValueName, lpReserved, lpType, lpData, lpcbData);
+    if (wcscmp(path.c_str(), L"\\REGISTRY\\MACHINE\\SOFTWARE\\Khronos\\Vulkan\\ImplicitLayers") == 0 && dwIndex == 0) {
 
         for (size_t i = 0; i < name.size(); i++) {
-        lpValueName[i] = name[i];
+            lpValueName[i] = name[i];
         }
         lpValueName[name.size()] = '\0';
 
@@ -238,16 +239,15 @@ LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpc
     return result;
 }
 
-
-DWORD WINAPI hook_thread(PVOID lParam){
-    HWND window = nullptr; 
-    printf("Searching for window...\n");
-    while(!window){
+DWORD WINAPI hook_thread(PVOID lParam) {
+    HWND window = nullptr;
+    printf("Searching for TgcMainWindow...\n");
+    while (!window) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         window = FindWindowA("TgcMainWindow", "Sky");
-    } 
-    printf("Window Found: %p\n", window);
-    layer::setup(window);      
+    }
+    printf("Complete! info: %p\n", window);
+    layer::setup(window);
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     InitConsole();
     Sleep(3000);
@@ -255,13 +255,13 @@ DWORD WINAPI hook_thread(PVOID lParam){
     return EXIT_SUCCESS;
 }
 
-DWORD WINAPI console_thread(LPVOID lpParam){
-    
+DWORD WINAPI console_thread(LPVOID lpParam) {
+
     return EXIT_SUCCESS;
 }
 
 
-void onAttach(){
+void onAttach() {
     loadWrapper();
     WCHAR path[MAX_PATH];
     GetModuleFileNameW(NULL, path, MAX_PATH);
@@ -269,9 +269,9 @@ void onAttach(){
     std::string _path(ws.begin(), ws.end());
     g_path = _path.substr(0, _path.find_last_of("\\/"));
     HMODULE handle = LoadLibrary("advapi32.dll");
-    if(handle!= NULL){
+    if (handle != NULL) {
         lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
-        LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t *)&oRegEnumValueA);
+        LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t*)&oRegEnumValueA);
         InitConsole();
         terminateCrashpadHandler();
         ModApi::Instance().InitSkyBase();
@@ -285,19 +285,19 @@ void onAttach(){
 }
 
 
-BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved){
+BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
     DisableThreadLibraryCalls(hinstDLL);
 
     switch (fdwReason) {
-        case DLL_PROCESS_ATTACH:
-            onAttach();
+    case DLL_PROCESS_ATTACH:
+        onAttach();
 
-            break;
-        case DLL_PROCESS_DETACH:
-        
-            break;
+        break;
+    case DLL_PROCESS_DETACH:
+
+        break;
     }
-    
+
     return TRUE;
 
 }

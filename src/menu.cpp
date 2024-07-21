@@ -35,14 +35,15 @@ namespace Menu {
             // Read fontPath
             fontconfig.fontPath = jsonData["fontPath"].get<std::string>();
 
-			// Read fontSize
-			fontconfig.fontSize = jsonData["fontSize"].get<float>();
+            // Read fontSize
+            fontconfig.fontSize = jsonData["fontSize"].get<float>();
 
             // Read unicodeRangeStart and unicodeRangeEnd
             fontconfig.unicodeRangeStart = static_cast<ImWchar>(std::stoi(jsonData["unicodeRangeStart"].get<std::string>(), nullptr, 16));
             fontconfig.unicodeRangeEnd = static_cast<ImWchar>(std::stoi(jsonData["unicodeRangeEnd"].get<std::string>(), nullptr, 16));
 
-        } catch (const json::exception& e) {
+        }
+        catch (const json::exception& e) {
             std::cerr << "Error parsing JSON: " << e.what() << std::endl;
         }
         file.close();
@@ -76,13 +77,14 @@ namespace Menu {
                     }
                 }
             }
-        } catch (const std::exception& e) {
+        }
+        catch (const std::exception& e) {
             std::cerr << "Exception while loading fonts: " << e.what() << std::endl;
         }
     }
 
 
-    void ShowFontSelector(){
+    void ShowFontSelector() {
         ImGuiIO& io = ImGui::GetIO();
         ImFont* font_current = ImGui::GetFont();
         if (ImGui::BeginCombo("Fonts", font_current->GetDebugName()))
@@ -100,22 +102,22 @@ namespace Menu {
 
 
     void InitializeContext(HWND hwnd) {
-        if (ig::GetCurrentContext( ))
+        if (ig::GetCurrentContext())
             return;
 
-        ImGui::CreateContext( );
+        ImGui::CreateContext();
         ImGui_ImplWin32_Init(hwnd);
 
         loadFontConfig("sml_config.json", fontconfig);
         LoadFontsFromFolder(fontconfig);
 
-        ImGuiIO& io = ImGui::GetIO( );
+        ImGuiIO& io = ImGui::GetIO();
         io.IniFilename = io.LogFilename = nullptr;
     }
 
 
-    void HelpMarker(const char* description){ 
-        ImGui::TextDisabled("(?)");
+    void HelpMarker(const char* description) {
+        ImGui::TextDisabled("<?>");
         if (ImGui::IsItemHovered())
         {
             ImGui::BeginTooltip();
@@ -129,51 +131,53 @@ namespace Menu {
 
     void SMLMainMenu() {
         char buf[64];
-        ig::SetNextWindowSize({200, 0}, ImGuiCond_Once);
-        if(ig::Begin("SML Main",nullptr,ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGuiIO& io = ImGui::GetIO();
+
+        ig::SetNextWindowSize({ 150, 0 }, ImGuiCond_Once);
+        if (ig::Begin("SML Main", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::SeparatorText(("Mods (" + std::to_string(ModLoader::GetModCount()) + ")").c_str());
             ig::BeginTable("##mods", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBody);
             ig::TableSetupColumn("Mod", ImGuiTableColumnFlags_WidthStretch);
-            ig::TableSetupColumn( "Info", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("Info").x);
+            ig::TableSetupColumn("Info", ImGuiTableColumnFlags_WidthFixed, ImGui::CalcTextSize("Info").x);
 
-            for(int i = 0; i < ModLoader::GetModCount(); i++) {
-                    snprintf(buf, 64, "%s##check%d", ModLoader::GetModName(i).data(), i);
-                    ig::TableNextColumn();
-                    if(ig::Checkbox(buf, &ModLoader::GetModEnabled(i))) {
-                        if(ModLoader::GetModEnabled(i)) {
-                            ModLoader::EnableMod(i);
-                        } else {
-                            ModLoader::DisableMod(i);
-                        }
+            for (int i = 0; i < ModLoader::GetModCount(); i++) {
+                snprintf(buf, 64, "%s##check%d", ModLoader::GetModName(i).data(), i);
+                ig::TableNextColumn();
+                if (ig::Checkbox(buf, &ModLoader::GetModEnabled(i))) {
+                    if (ModLoader::GetModEnabled(i)) {
+                        ModLoader::EnableMod(i);
                     }
-                    ig::TableNextColumn();
-                    HelpMarker(ModLoader::toString(i).c_str());
+                    else {
+                        ModLoader::DisableMod(i);
+                    }
+                }
+                ig::TableNextColumn();
+                HelpMarker(ModLoader::toString(i).c_str());
             }
             ig::EndTable();
             ImGui::SeparatorText("Settings");
-            ImGuiIO& io = ImGui::GetIO();
             ShowFontSelector();
             ImGui::SameLine();
-            HelpMarker(std::format("Total: {}\nPath: {}\nStart Range: {}\nEnd Range: {}\nSize: {}W / {}H\nConfig: sml_config.json", io.Fonts->Fonts.Size, fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd,  io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
-            
+            HelpMarker(std::format("Total: {}\nPath: {}\nStart Range: {}\nEnd Range: {}\nSize: {}W / {}H\nConfig: sml_config.json", io.Fonts->Fonts.Size, fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd, io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
+
             const float MIN_SCALE = 0.3f;
             const float MAX_SCALE = 3.0f;
             static float window_scale = 1.0f;
-            if (ImGui::DragFloat("Window scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp))
+            if (ImGui::DragFloat("Window Scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp))
                 ImGui::SetWindowFontScale(window_scale);
-            ImGui::DragFloat("Global scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-            
+            ImGui::DragFloat("Global Scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::Text("FPS: %.1f | %.3f ms/frame", io.Framerate, 1000.0f / io.Framerate);
+            ImGui::Text("FPS: %.f | %.2f ms | DeltaTime: %.2f | amb", io.Framerate, 1000.0f / io.Framerate, io.DeltaTime);
         }
         ig::End();
     }
 
 
-    void Render( ) {
+    void Render() {
         if (!bShowMenu)
             return;
         SMLMainMenu();
