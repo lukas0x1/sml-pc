@@ -219,7 +219,7 @@ namespace Menu {
         ImGuiIO& io = ImGui::GetIO();
 
         ig::SetNextWindowSize({ 200, 0 }, ImGuiCond_Once);
-        if (ig::Begin("SML Main", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar)) {
+        if (ig::Begin("SML Main", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::SeparatorText(("Mods (" + std::to_string(ModLoader::GetModCount()) + ")").c_str());
             ig::BeginTable("##mods", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_NoBordersInBody);
             ig::TableSetupColumn("Mod", ImGuiTableColumnFlags_WidthStretch);
