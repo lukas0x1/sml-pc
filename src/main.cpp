@@ -47,7 +47,7 @@ __declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole() {
 void InitConsole() {
     FreeConsole();
     AllocConsole();
-    SetConsoleTitle("SML Console - 1.02MT - TgcMainWindow::VulkanRendering");
+    SetConsoleTitle("SML Console - 0.0.3MT - TgcMainWindow::VulkanRendering");
 
     if (IsValidCodePage(CP_UTF8)) {
         SetConsoleCP(CP_UTF8);
@@ -90,6 +90,8 @@ void loadWrapper() {
         dllHandle = LoadLibrary("C:\\Windows\\System32\\POWRPROF.dll");
     }
 
+    printf("Loading powrprof.dll symbols...");
+
     if (dllHandle != NULL) {
         o_GetPwrCapabilities = (BOOLEAN(*)(PSYSTEM_POWER_CAPABILITIES))GetProcAddress(dllHandle, "GetPwrCapabilities");
         o_CallNtPowerInformation = (NTSTATUS(*)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG))GetProcAddress(dllHandle, "CallNtPowerInformation");
@@ -118,6 +120,7 @@ static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
         if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam)) {
             return ERROR_SUCCESS;
         }
+
         if (ImGui::GetIO().WantCaptureMouse && (uMsg == WM_LBUTTONDOWN ||
             uMsg == WM_LBUTTONUP || uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP ||
             uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP || uMsg == WM_MOUSEWHEEL ||
@@ -129,9 +132,9 @@ static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 
 void terminateCrashpadHandler() {
-
     PROCESSENTRY32 entry;
     entry.dwSize = sizeof(PROCESSENTRY32);
+
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
     if (Process32First(snapshot, &entry) == TRUE) {
         while (Process32Next(snapshot, &entry) == TRUE) {
@@ -247,10 +250,13 @@ DWORD WINAPI hook_thread(PVOID lParam) {
         window = FindWindowA("TgcMainWindow", "Sky");
     }
     printf("Complete! info: %p\n", window);
+
+    // todo: add something a little special here.
     layer::setup(window);
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     InitConsole();
     Sleep(3000);
+    printf("Finished hook_thread routine, loading mods.");
     //clear_screen();
     return EXIT_SUCCESS;
 }

@@ -49,10 +49,14 @@ public:
     bool Hook(uintptr_t addr, void* newFn, void** oldFn);
     bool Patch(uintptr_t address, const std::vector<unsigned char>& patchBytes, bool toggle = true);
     bool Unpatch(uintptr_t address, const std::vector<unsigned char>& unpatchBytes);
+    bool Restore(uintptr_t address);
+    bool SetByte(uintptr_t address, std::vector<unsigned char> setByte);
 
     bool FastHook(uintptr_t addr, void* newFn, void** oldFn);
     bool FastPatch(uintptr_t address, const std::vector<unsigned char>& patchBytes, bool toggle = true);
     bool FastUnpatch(uintptr_t address, const std::vector<unsigned char>& unpatchBytes);
+    bool FastRestore(uintptr_t address);
+    bool FastSetByte(uintptr_t address, std::vector<unsigned char> setByte);
 
     bool UnHook(uintptr_t addr);
 
