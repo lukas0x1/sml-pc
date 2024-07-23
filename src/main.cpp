@@ -47,7 +47,7 @@ __declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
 void InitConsole(){
     FreeConsole();
     AllocConsole();
-    SetConsoleTitle("SML Console");
+    SetConsoleTitle("SML Console - 0.1.2 - TgcMainWindow::VulkanRendering");
 
     if (IsValidCodePage(CP_UTF8)) {
         SetConsoleCP(CP_UTF8);
@@ -88,6 +88,8 @@ void loadWrapper(){
         dllHandle = LoadLibrary("C:\\Windows\\System32\\POWRPROF.dll");
     }
 
+    printf("Loading powrprof.dll symbols...");
+
     if (dllHandle != NULL) {
         o_GetPwrCapabilities = (BOOLEAN(*)(PSYSTEM_POWER_CAPABILITIES))GetProcAddress(dllHandle, "GetPwrCapabilities");
         o_CallNtPowerInformation = (NTSTATUS (*)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG))GetProcAddress(dllHandle, "CallNtPowerInformation");
@@ -127,18 +129,19 @@ static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 
 void terminateCrashpadHandler() {
-
     PROCESSENTRY32 entry;
     entry.dwSize = sizeof(PROCESSENTRY32);
+
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, NULL);
     if (Process32First(snapshot, &entry) == TRUE) {
         while (Process32Next(snapshot, &entry) == TRUE) {
             if (lstrcmp(entry.szExeFile, "crashpad_handler.exe") == 0) {
                 HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, entry.th32ProcessID);
 
-                if (hProcess!= NULL) {
+                if (hProcess != NULL) {
                     TerminateProcess(hProcess, 0);
                     CloseHandle(hProcess);
+                    printf("Detected and closed crashpad_handler.exe");
                 }
             }
         }
@@ -237,18 +240,21 @@ LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpc
 }
 
 
-DWORD WINAPI hook_thread(PVOID lParam){
-    HWND window = nullptr; 
-    printf("Searching for window...\n");
-    while(!window){
+DWORD WINAPI hook_thread(PVOID lParam) {
+    HWND window = nullptr;
+    printf("Searching for TgcMainWindow...\n");
+    while (!window) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         window = FindWindowA("TgcMainWindow", "Sky");
-    } 
-    printf("Window Found: %p\n", window);
-    layer::setup(window);      
+    }
+    printf("Complete! info: %p\n", window);
+
+    // todo: add something a little special here.
+    layer::setup(window);
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     InitConsole();
     Sleep(3000);
+    printf("Finished hook_thread routine, loading mods.");
     //clear_screen();
     return EXIT_SUCCESS;
 }
@@ -259,7 +265,7 @@ DWORD WINAPI console_thread(LPVOID lpParam){
 }
 
 
-void onAttach(){
+void onAttach() {
     loadWrapper();
     WCHAR path[MAX_PATH];
     GetModuleFileNameW(NULL, path, MAX_PATH);
@@ -267,9 +273,9 @@ void onAttach(){
     std::string _path(ws.begin(), ws.end());
     g_path = _path.substr(0, _path.find_last_of("\\/"));
     HMODULE handle = LoadLibrary("advapi32.dll");
-    if(handle!= NULL){
+    if (handle != NULL) {
         lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
-        LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t *)&oRegEnumValueA);
+        LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t*)&oRegEnumValueA);
         InitConsole();
         terminateCrashpadHandler();
         ModApi::Instance().InitSkyBase();
