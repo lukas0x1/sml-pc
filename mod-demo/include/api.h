@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <string>
-
+#include "libmem.h"
 
 #ifdef _MSC_VER
     #define EXPORT __declspec(dllexport)

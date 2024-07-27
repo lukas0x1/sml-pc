@@ -12,6 +12,9 @@
 #include <winreg.h>
 #include <winuser.h>
 #include <xlocale>
+#include <iostream>
+#include <fstream>
+#include <streambuf>
 #include "include/api.h"
 
 #include "include/layer.h"
@@ -43,11 +46,48 @@ __declspec(dllexport) POWER_PLATFORM_ROLE PowerDeterminePlatformRole(){
     return o_PowerDeterminePlatformRole();
 }
 
+// SML Log file
+std::ofstream SML_Log;
+
+// Custom Streambuf for logging to both file and console
+class StreamBuf : public std::streambuf {
+public:
+    StreamBuf(std::streambuf* buf, const std::string& prefix)
+        : originalBuf(buf), logPrefix(prefix) {}
+
+protected:
+    virtual int overflow(int c) override {
+        if (c != EOF) {
+            if (c == '\n') {
+                SML_Log << logPrefix << buffer << std::endl;
+                SML_Log.flush();
+                buffer.clear();
+            } else {
+                buffer += static_cast<char>(c);
+            }
+        }
+        return originalBuf->sputc(c);
+    }
+
+private:
+    std::streambuf* originalBuf;
+    std::string logPrefix;
+    std::string buffer;
+};
+
+void print(const char* format, ...) {
+    char buffer[4096];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    std::cout << std::string(buffer);
+}
 
 void InitConsole(){
     FreeConsole();
     AllocConsole();
-    SetConsoleTitle("SML Console - 0.1.2 - TgcMainWindow::VulkanRendering");
+    SetConsoleTitle("SML Console");
 
     if (IsValidCodePage(CP_UTF8)) {
         SetConsoleCP(CP_UTF8);
@@ -75,10 +115,22 @@ void InitConsole(){
         SetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
     }
 
-    FILE * outputStream;
-    freopen_s(&outputStream, "CONOUT$", "w", stdout);
-    FILE* inputStream;
-    freopen_s(&inputStream, "CONIN$", "r", stdin);
+    SML_Log.open("SML.log", std::ios::out | std::ios::app);
+
+    // Redirect std::cout, and std::cerr to SML.log
+    static StreamBuf coutBuf(std::cout.rdbuf(), "[output] ");
+    std::cout.rdbuf(&coutBuf);
+
+    static StreamBuf cerrBuf(std::cerr.rdbuf(), "[error] ");
+    std::cerr.rdbuf(&cerrBuf);
+
+    FILE* file;
+    freopen_s(&file, "CONOUT$", "w", stdout);
+    freopen_s(&file, "CONOUT$", "w", stderr);
+    freopen_s(&file, "CONIN$", "r", stdin);
+
+    fflush(stdout);
+    fflush(stderr);
 }
 
 
@@ -88,7 +140,7 @@ void loadWrapper(){
         dllHandle = LoadLibrary("C:\\Windows\\System32\\POWRPROF.dll");
     }
 
-    printf("Loading powrprof.dll symbols...");
+    print("Loading powrprof.dll symbols...");
 
     if (dllHandle != NULL) {
         o_GetPwrCapabilities = (BOOLEAN(*)(PSYSTEM_POWER_CAPABILITIES))GetProcAddress(dllHandle, "GetPwrCapabilities");
@@ -96,11 +148,11 @@ void loadWrapper(){
         o_PowerDeterminePlatformRole = (POWER_PLATFORM_ROLE (*)())GetProcAddress(dllHandle, "PowerDeterminePlatformRole");
     
     if (o_GetPwrCapabilities == nullptr || o_CallNtPowerInformation == nullptr || o_PowerDeterminePlatformRole == nullptr) {
-        printf("Could not locate symbols in powrprof.dll");
+        print("Could not locate symbols in powrprof.dll");
     }
     }
     else {
-        printf("failed to load POWRPROF.dll");
+        print("failed to load POWRPROF.dll");
     }
 }
 
@@ -141,7 +193,7 @@ void terminateCrashpadHandler() {
                 if (hProcess != NULL) {
                     TerminateProcess(hProcess, 0);
                     CloseHandle(hProcess);
-                    printf("Detected and closed crashpad_handler.exe");
+                    print("Detected and closed crashpad_handler.exe");
                 }
             }
         }
@@ -205,17 +257,6 @@ std::wstring GetKeyPathFromKKEY(HKEY key)
 #undef STATUS_BUFFER_TOO_SMALL
 #undef STATUS_SUCCESS
 
-void clear_screen(char fill = ' ') { 
-    COORD tl = {0,0};
-    CONSOLE_SCREEN_BUFFER_INFO s;
-    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);   
-    GetConsoleScreenBufferInfo(console, &s);
-    DWORD written, cells = s.dwSize.X * s.dwSize.Y;
-    FillConsoleOutputCharacter(console, fill, cells, tl, &written);
-    FillConsoleOutputAttribute(console, s.wAttributes, cells, tl, &written);
-    SetConsoleCursorPosition(console, tl);
-}
-
 
 typedef LSTATUS (__stdcall *PFN_RegEnumValueA)(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpcchValueName, LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData);
 PFN_RegEnumValueA oRegEnumValueA;
@@ -242,20 +283,17 @@ LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpc
 
 DWORD WINAPI hook_thread(PVOID lParam) {
     HWND window = nullptr;
-    printf("Searching for TgcMainWindow...\n");
+    InitConsole();
+    print("Searching for Sky Window\n");
     while (!window) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         window = FindWindowA("TgcMainWindow", "Sky");
     }
-    printf("Complete! info: %p\n", window);
 
     // todo: add something a little special here.
     layer::setup(window);
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
-    InitConsole();
-    Sleep(3000);
-    printf("Finished hook_thread routine, loading mods.");
-    //clear_screen();
+
     return EXIT_SUCCESS;
 }
 
@@ -276,7 +314,8 @@ void onAttach() {
     if (handle != NULL) {
         lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
         LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t*)&oRegEnumValueA);
-        InitConsole();
+        std::remove("SML.log");
+        AllocConsole();
         terminateCrashpadHandler();
         ModApi::Instance().InitSkyBase();
         ModLoader::LoadMods();
@@ -284,7 +323,7 @@ void onAttach() {
         CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);
     }
     else {
-        printf("Failed to load advapi32.dll");
+        print("Failed to load advapi32.dll");
     }
 }
 
@@ -295,10 +334,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved){
     switch (fdwReason) {
         case DLL_PROCESS_ATTACH:
             onAttach();
-
             break;
         case DLL_PROCESS_DETACH:
-        
             break;
     }
     
