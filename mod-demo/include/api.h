@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include "libmem.h"
 
 #ifdef _MSC_VER
     #define EXPORT __declspec(dllexport)
