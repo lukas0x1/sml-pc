@@ -84,6 +84,17 @@ void print(const char* format, ...) {
     std::cout << std::string(buffer);
 }
 
+void InitLogger(){
+    SML_Log.open("SML.log", std::ios::out | std::ios::app);
+
+    // Redirect std::cout, and std::cerr to SML.log
+    static StreamBuf coutBuf(std::cout.rdbuf(), "[output] ");
+    std::cout.rdbuf(&coutBuf);
+
+    static StreamBuf cerrBuf(std::cerr.rdbuf(), "[error] ");
+    std::cerr.rdbuf(&cerrBuf);
+}
+
 void InitConsole(){
     FreeConsole();
     AllocConsole();
@@ -114,15 +125,6 @@ void InitConsole(){
         wcscpy_s(cfi.FaceName, L"Lucida Console");
         SetCurrentConsoleFontEx(hStdout, FALSE, &cfi);
     }
-
-    SML_Log.open("SML.log", std::ios::out | std::ios::app);
-
-    // Redirect std::cout, and std::cerr to SML.log
-    static StreamBuf coutBuf(std::cout.rdbuf(), "[output] ");
-    std::cout.rdbuf(&coutBuf);
-
-    static StreamBuf cerrBuf(std::cerr.rdbuf(), "[error] ");
-    std::cerr.rdbuf(&cerrBuf);
 
     FILE* file;
     freopen_s(&file, "CONOUT$", "w", stdout);
@@ -283,28 +285,21 @@ LSTATUS hkRegEnumValueA(HKEY hKey, DWORD dwIndex, LPSTR lpValueName, LPDWORD lpc
 
 DWORD WINAPI hook_thread(PVOID lParam) {
     HWND window = nullptr;
-    InitConsole();
     print("Searching for Sky Window\n");
     while (!window) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
         window = FindWindowA("TgcMainWindow", "Sky");
     }
-
-    // todo: add something a little special here.
     layer::setup(window);
     oWndProc = reinterpret_cast<WNDPROC>(SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
-
     return EXIT_SUCCESS;
 }
-
-DWORD WINAPI console_thread(LPVOID lpParam){
-    
-    return EXIT_SUCCESS;
-}
-
 
 void onAttach() {
     loadWrapper();
+    InitConsole();
+    std::remove("SML.log");
+    InitLogger();
     WCHAR path[MAX_PATH];
     GetModuleFileNameW(NULL, path, MAX_PATH);
     std::wstring ws(path);
@@ -314,12 +309,9 @@ void onAttach() {
     if (handle != NULL) {
         lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
         LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t*)&oRegEnumValueA);
-        std::remove("SML.log");
-        AllocConsole();
         terminateCrashpadHandler();
         ModApi::Instance().InitSkyBase();
         ModLoader::LoadMods();
-        CreateThread(NULL, 0, console_thread, NULL, 0, NULL);
         CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);
     }
     else {

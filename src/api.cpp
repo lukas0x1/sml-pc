@@ -76,7 +76,7 @@ bool ModApi::Hook(uintptr_t addr, void* newFn, void** oldFn) {
     HookDef hook;
 
     if (hooks.contains(addr)) { // dogshit_check.cpp
-        printf("hooking : function is already hooked!");
+        std::cout << "hooking : function is already hooked!\n";
         return true;
     }
     hook.addr = addr; hook.newFn = newFn; hook.oldFn = oldFn;

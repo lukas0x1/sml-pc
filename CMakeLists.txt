@@ -21,6 +21,7 @@ set(LIBS
     #${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libcurl.lib   #uncomment When Needed
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/release/libmem.lib
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/vulkan.lib
+    ${CMAKE_CURRENT_SOURCE_DIR}/lib/ktx.lib
 )
 # set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/mod-demo/powrprof/release/powrprof.lib)   #mod demo is not used rn uncomment when needed
 set(COPY_TO ${CMAKE_CURRENT_SOURCE_DIR}/That_Sky_Mod/lib/release/powrprof.lib)      

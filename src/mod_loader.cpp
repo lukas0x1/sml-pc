@@ -21,7 +21,7 @@ void ModLoader::LoadMods() {
 
     DWORD ftyp = GetFileAttributesA(directory.c_str());
     if(ftyp == INVALID_FILE_ATTRIBUTES){
-        printf("Creating mods directory...\n");
+        std::cout << "Creating mods directory...\n";
         CreateDirectoryA((LPCSTR)directory.c_str(), NULL);
     }
     for (const auto& entry : std::filesystem::directory_iterator(directory)) {
