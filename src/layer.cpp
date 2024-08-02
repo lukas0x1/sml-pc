@@ -17,6 +17,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <iostream>
 
 #include <mutex>
 #include <map>
@@ -62,8 +63,6 @@ struct DeviceData {
    QueueData *graphic_queue;
    std::vector<QueueData*> queues;
 };
-
-DeviceData deviceData;
 
 struct QueueData {
   DeviceData *device;
@@ -121,7 +120,7 @@ static void DeviceMapQueues(DeviceData *data,
 
 
       if(data->set_device_loader_data(data->device, queue) != VK_SUCCESS){
-        printf("not success");
+        std::cout << "not success\n";
       }
     
       data->queues.push_back(new_queue_data(queue, data));
@@ -175,8 +174,8 @@ static bool CreateDeviceVK( ) {
         create_info.ppEnabledExtensionNames = &instance_extension;
 
         // Create Vulkan Instance without any debug feature
-        vkCreateInstance(&create_info, g_Allocator, &g_Instance); // Calls this function
-        printf("[+] Vulkan: g_Instance: 0x%p\n", g_Instance);
+        vkCreateInstance(&create_info, g_Allocator, &g_Instance);
+        std::cout << "[+] Vulkan: g_Instance: 0x" << g_Instance << std::endl;
     }
 
     // Select GPU
@@ -202,7 +201,7 @@ static bool CreateDeviceVK( ) {
         }
 
         g_PhysicalDevice = gpus[use_gpu];
-        printf("[+] Vulkan: g_PhysicalDevice: 0x%p\n", g_PhysicalDevice);
+        std::cout << "[+] Vulkan: g_PhysicalDevice: 0x" << g_PhysicalDevice << std::endl;
 
         delete[] gpus;
     }
@@ -221,7 +220,7 @@ static bool CreateDeviceVK( ) {
         }
         IM_ASSERT(g_QueueFamily != (uint32_t)-1);
 
-        printf("[+] Vulkan: g_QueueFamily: %u\n", g_QueueFamily);
+        std::cout << "[+] Vulkan: g_QueueFamily: " << g_QueueFamily << std::endl;
     }
 
     // Create Logical Device (with 1 queue)
@@ -244,7 +243,7 @@ static bool CreateDeviceVK( ) {
 
         vkCreateDevice(g_PhysicalDevice, &create_info, g_Allocator, &g_FakeDevice);
 
-        printf("[+] Vulkan: g_FakeDevice: 0x%p\n", g_FakeDevice);
+        std::cout << "[+] Vulkan: g_FakeDevice: 0x" << g_FakeDevice << std::endl;
     }
 
     return true;
@@ -544,7 +543,7 @@ VK_LAYER_EXPORT VkResult VKAPI_CALL ModLoader_CreateSwapchainKHR(VkDevice device
 VK_LAYER_EXPORT VkResult VKAPI_CALL ModLoader_AcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex) {
 
   //g_Device = device;
-  printf("why am I being called?\n");
+  std::cout << "why am I being called?\n";
 
   return device_dispatch[GetKey(device)].AcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, pImageIndex);
 }
@@ -589,16 +588,18 @@ VK_LAYER_EXPORT PFN_vkVoidFunction VKAPI_CALL ModLoader_GetInstanceProcAddr(VkIn
 
 void layer::setup(HWND hwnd){
 
-	if (!CreateDeviceVK()) { // Create Vulkan Device
-    printf("[!] CreateDeviceVK() failed.\n");
+  if (!CreateDeviceVK( )) {
+    std::cout << "[!] CreateDeviceVK() failed.\n";
     return;
   }
 
   g_Hwnd = hwnd;
 
 
-
 }
+
+
+
 
 static void CleanupRenderTarget( ) {
     for (uint32_t i = 0; i < RTL_NUMBER_OF(g_Frames); ++i) {
@@ -658,12 +659,12 @@ static VkResult RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPrese
     QueueData *queue_data = GetQueueData(queue);
     /*
     if(!queue){
-      printf("queue is null\n");
+      std::cout << "queue is null\n";
       return;
     }
     
     if(queue_data->device == NULL){
-      printf("device is null");
+      std::cout << "device is null";
       
     }
     */

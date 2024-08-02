@@ -12,4 +12,3 @@ namespace Hooks {
 
 namespace H = Hooks;
 #endif // HOOKS_HPP
-

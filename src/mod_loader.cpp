@@ -6,21 +6,16 @@
 
 #include "include/mod_loader.h"
 
+
 std::vector<ModItem> ModLoader::mods;
 
-void ModLoader::LoadMods() {
-
-    std::string directory = "mods"; // 
-    char buffer[MAX_PATH];
-    GetModuleFileNameA(NULL, buffer, MAX_PATH);
-    std::string::size_type pos = std::string(buffer).find_last_of("\\/");
-    if (pos != std::string::npos) {
-        directory = std::string(buffer).substr(0, pos) + "\\" + directory;
-    }
+void ModLoader::LoadMods(std::string dll_path) {
+    
+	std::string directory = dll_path + "\\mods";
 
     DWORD ftyp = GetFileAttributesA(directory.c_str());
-    if (ftyp == INVALID_FILE_ATTRIBUTES) {
-        printf("Creating mods directory...\n");
+    if(ftyp == INVALID_FILE_ATTRIBUTES){
+        std::cout << "Creating mods directory...\n";
         CreateDirectoryA((LPCSTR)directory.c_str(), NULL);
     }
     for (const auto& entry : std::filesystem::directory_iterator(directory)) {
@@ -32,19 +27,18 @@ void ModLoader::LoadMods() {
                 HMODULE hModule = LoadLibraryA(filePath.c_str()); // load dll
                 if (hModule != nullptr) {
                     mods.emplace_back(hModule);
-                    ModItem& item = mods.back();
-                    item.start = (StartFn)GetProcAddress(hModule, "Start");
-                    item.onDisable = (OnDisableFn)GetProcAddress(hModule, "onDisable");
-                    item.onEnable = (OnEnableFn)GetProcAddress(hModule, "onEnable");
-                    item.getInfo = (GetModInfoFn)GetProcAddress(hModule, "GetModInfo");
-                    item.render = (RenderFn)GetProcAddress(hModule, "Render");
-                    if (item.getInfo != NULL)
+                    ModItem & item = mods.back();
+                    item.start = (StartFn) GetProcAddress(hModule, "Start");
+                    item.onDisable = (OnDisableFn) GetProcAddress(hModule, "onDisable");
+                    item.onEnable = (OnEnableFn) GetProcAddress(hModule, "onEnable");
+                    item.getInfo = (GetModInfoFn) GetProcAddress(hModule, "GetModInfo");
+                    item.render = (RenderFn) GetProcAddress(hModule, "Render");
+                    if(item.getInfo != NULL)
                         item.getInfo(item.info);
-                    if (item.start != NULL) {
+                    if(item.start != NULL) {
                         item.start();
                     }
-                }
-                else {
+                } else {
                     std::cout << "Failed to load DLL: " << filePath << std::endl;
                 }
             }
@@ -61,17 +55,16 @@ const ModInfo& ModLoader::GetModInfo(int index) {
 }
 
 void ModLoader::Render(int index) {
-    if (mods[index].enabled && mods[index].render != nullptr)
+    if(mods[index].enabled && mods[index].render != nullptr)
         mods[index].render();
 }
-
 void ModLoader::EnableMod(int index) {
-    if (mods[index].onEnable != nullptr)
+    if(mods[index].onEnable != nullptr)
         mods[index].onEnable();
 }
 
-void ModLoader::DisableMod(int index) {
-    if (mods[index].onDisable != nullptr)
+void ModLoader::DisableMod(int index){
+    if(mods[index].onDisable != nullptr)
         mods[index].onDisable();
 }
 
@@ -83,21 +76,21 @@ std::string_view ModLoader::GetModName(int index) {
     return mods[index].info.name;
 }
 
+
 void ModLoader::RenderAll() {
-    for (int i = 0; i < mods.size(); i++) {
+    for(int i = 0 ; i < mods.size(); i++) {
         Render(i);
     }
 }
-
 std::string ModLoader::toString(int index) {
     std::stringstream ss;
 
-    ss << "Mod Information" << "\n";
+    ss << "Information" << "\n";
     ss << "Name: " << mods[index].info.name << "\n";
     ss << "Version: " << mods[index].info.version << "\n";
     ss << "Author: " << mods[index].info.author << "\n";
-    ss << "Description: " << mods[index].info.description << "\n";
-    // ss << "GetModInfo: " << mods[index].getInfo << "\n";
+    ss << "Details: " << mods[index].info.description << "\n";
+    //ss << "GetModInfo: " << mods[index].getInfo << "\n";
     // ss << "Render: " << mods[index].render << "\n";
     return ss.str();
 }

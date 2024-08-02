@@ -39,7 +39,7 @@ class ModLoader {
     static std::vector<ModItem> mods;
 
 public:
-    static void LoadMods();
+    static void LoadMods(std::string dll_path);
     static void RenderAll();
     static size_t GetModCount();
     static const ModInfo& GetModInfo(int index);

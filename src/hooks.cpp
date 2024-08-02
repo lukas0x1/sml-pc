@@ -38,10 +38,10 @@ static DWORD WINAPI ReinitializeGraphicalHooks(LPVOID lpParam) {
 static WNDPROC oWndProc;
 static LRESULT WINAPI WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     if (uMsg == WM_KEYDOWN) {
-        if (wParam == VK_INSERT) {
+        if (wParam == VK_HOME) {
             Menu::bShowMenu = !Menu::bShowMenu;
             return 0;
-        } else if (wParam == VK_HOME) {
+        } else if (wParam == VK_INSERT) {
             HANDLE hHandle = CreateThread(NULL, 0, ReinitializeGraphicalHooks, NULL, 0, NULL);
             if (hHandle != NULL)
                 CloseHandle(hHandle);
