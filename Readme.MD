@@ -15,16 +15,13 @@
 - Build the project
 
 # How to install
-- Download SML Injected.zip from the releases and extract it
-- Copy the `sml_config.json`, `libcurl.dll` files and `mods` folder to the game directory for Sky: Children of the Light
-- Inject canvas.dll into the game using your favorite injector
-- Need a injector? Use [FateInjector](https://github.com/fligger/FateInjector)
-- I'll make my own injector soon
+- Download injection.zip from the releases and extract it
+- Launch Sky and double-click the injector.exe (TSM is bundled)
 
 # Make your own mods
 - Download `mod-demo` folder and open it in Visual Studio
 - Do whatever and build the same way as the main project
 
 # TODO
-- [ ] Make my own injector
-- [ ] Fix compatibility in general (Testing)
+- [*] Make my own injector (needs a UI)
+- [*] Fix compatibility in general (Testing)
