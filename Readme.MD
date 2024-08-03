@@ -14,9 +14,12 @@
 - Open the project in Visual Studio and create a x64 Release with toolset msvc_x64
 - Build the project
 
-# How to install
+# How to use
 - Download injection.zip from the releases and extract it
-- Launch Sky and double-click the injector.exe (TSM is bundled)
+- Double-click the injector.exe (TSM is bundled)
+
+If mods are causing issues add the mods resources you get from downloading the mod into **MODS FOLDER OF SKY** (Folder doesn't exist? Create one by right-clicking and pressing folder.)
+You can also pin to the taskbar for the injector as it launches sky (added icon for this exact reason)
 
 # Make your own mods
 - Download `mod-demo` folder and open it in Visual Studio
