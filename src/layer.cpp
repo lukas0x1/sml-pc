@@ -9,6 +9,7 @@
 
 #include "include/layer.h"
 #include "include/menu.hpp"
+// #include "include/gif_loader.h" // for git_loader
 
 #include <imgui.h>
 #include <imgui_impl_vulkan.h>
@@ -142,14 +143,17 @@ static VkLayerDeviceCreateInfo *get_device_chain_info(const VkDeviceCreateInfo *
 
 static VkAllocationCallbacks* g_Allocator = NULL;
 static VkInstance g_Instance = VK_NULL_HANDLE;
-static VkPhysicalDevice g_PhysicalDevice = VK_NULL_HANDLE;
-static VkDevice g_FakeDevice = VK_NULL_HANDLE, g_Device = VK_NULL_HANDLE;
+// made them external for git_loader
+VkPhysicalDevice g_PhysicalDevice = VK_NULL_HANDLE;
+VkDevice g_FakeDevice = VK_NULL_HANDLE, g_Device = VK_NULL_HANDLE;
+VkQueue g_GraphicsQueue;
+VkCommandBuffer g_CommandBuffer;
+VkDescriptorPool g_DescriptorPool = VK_NULL_HANDLE;
 
 static uint32_t g_QueueFamily = (uint32_t)-1;
 static std::vector<VkQueueFamilyProperties> g_QueueFamilies;
 
 static VkPipelineCache g_PipelineCache = VK_NULL_HANDLE;
-static VkDescriptorPool g_DescriptorPool = VK_NULL_HANDLE;
 static uint32_t g_MinImageCount = 1;
 static VkRenderPass g_RenderPass = VK_NULL_HANDLE;
 static ImGui_ImplVulkanH_Frame g_Frames[8] = { };
@@ -676,6 +680,16 @@ static VkResult RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPrese
     const bool queueSupportsGraphic = DoesQueueSupportGraphic(queue, &graphicQueue);
     Menu::InitializeContext(g_Hwnd);
 
+    // gif_loader test code    
+    // static GifLoader gifLoader;
+    // static float size = 150;    
+    // static bool gifLoaded = false;
+    // if (!gifLoaded) {
+    //   gifLoaded = gifLoader.LoadGif("TSM.gif");
+    //   if(!gifLoaded)
+    //     std::cerr << "Failed to load gif" << std::endl;
+    // }
+
     for (uint32_t i = 0; i < pPresentInfo->swapchainCount; ++i) {
         VkSwapchainKHR swapchain = pPresentInfo->pSwapchains[i];
         if (g_Frames[0].Framebuffer == VK_NULL_HANDLE) {
@@ -738,6 +752,16 @@ static VkResult RenderImGui_Vulkan(VkQueue queue, const VkPresentInfoKHR* pPrese
         ImGui::NewFrame( );
 
         Menu::Render( );
+        // git_loader test code
+        // if(gifLoaded){
+        //   ImGui::Begin("Test");
+          // ImGui::SliderFloat("Icon Size", &size, ImGui::GetWindowSize().y * 0.1, 512);
+          // static bool TSM_Gif = false;
+          // ImGui::Checkbox("TSM Gif", &TSM_Gif);
+          // if(TSM_Gif)
+        //     gifLoader.RenderFrame(size, size);
+        //   ImGui::End();
+        // }
 
         ImGui::Render( );
 
