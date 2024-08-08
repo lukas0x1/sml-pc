@@ -45,7 +45,10 @@ public:
     uintptr_t ScanData(lm_bytearr_t data, size_t scansize);
     uintptr_t ScanData(lm_bytearr_t data, size_t size, uintptr_t start, size_t scansize);
 
+
     bool Hook(uintptr_t addr, void* newFn, void** oldFn);
+    bool UnHook(uintptr_t addr);
+
     bool Patch(uintptr_t address, const std::vector<unsigned char>& patchBytes, bool toggle = true);
     bool Unpatch(uintptr_t address, const std::vector<unsigned char>& unpatchBytes);
     bool Restore(uintptr_t address);
@@ -57,7 +60,17 @@ public:
     bool FastRestore(uintptr_t address);
     bool FastSetByte(uintptr_t address, std::vector<unsigned char> setByte);
 
-    bool UnHook(uintptr_t addr);
+    bool LoadExternalModule(char* path, lm_module_t* modbuf);
+    bool UnloadExternalModule(lm_module_t* modbuf);
+
+    lm_address_t AddressFromSymbol(char* symbolName);
+    lm_address_t AddressFromSymbol(char* symbolName, lm_module_t module);
+
+    lm_address_t DemangledAddressFromSymbol(char* symbolName);
+    lm_address_t DemangledAddressFromSymbol(char* symbolName, lm_module_t module);
+
+    bool FastLoadExternalModule(char* path, lm_module_t* modbuf);
+    bool FastUnloadExternalModule(lm_module_t* modbuf);
 };
 
 #define API ModApi::Instance()

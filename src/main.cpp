@@ -138,9 +138,9 @@ void InitConsole(){
 
 void loadWrapper(){
     dllHandle = LoadLibrary("C:\\Windows\\System32\\powrprof.dll");
-    if (dllHandle == NULL) {
+
+    if (dllHandle == NULL)
         dllHandle = LoadLibrary("C:\\Windows\\System32\\POWRPROF.dll");
-    }
 
     print("Loading powrprof.dll symbols...");
 
@@ -149,13 +149,11 @@ void loadWrapper(){
         o_CallNtPowerInformation = (NTSTATUS (*)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG))GetProcAddress(dllHandle, "CallNtPowerInformation");
         o_PowerDeterminePlatformRole = (POWER_PLATFORM_ROLE (*)())GetProcAddress(dllHandle, "PowerDeterminePlatformRole");
     
-    if (o_GetPwrCapabilities == nullptr || o_CallNtPowerInformation == nullptr || o_PowerDeterminePlatformRole == nullptr) {
-        print("Could not locate symbols in powrprof.dll");
+        if (o_GetPwrCapabilities == nullptr || o_CallNtPowerInformation == nullptr || o_PowerDeterminePlatformRole == nullptr) {
+            print("Could not locate symbols in powrprof.dll");
+        }
     }
-    }
-    else {
-        print("failed to load POWRPROF.dll");
-    }
+    else print("failed to load POWRPROF.dll");
 }
 
 
@@ -305,18 +303,20 @@ void onAttach() {
     std::wstring ws(path);
     std::string _path(ws.begin(), ws.end());
     g_path = _path.substr(0, _path.find_last_of("\\/"));
+
     HMODULE handle = LoadLibrary("advapi32.dll");
     if (handle != NULL) {
         lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
-        LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t*)&oRegEnumValueA);
-        terminateCrashpadHandler();
-        ModApi::Instance().InitSkyBase();
-        ModLoader::LoadMods();
+        if (LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t*)&oRegEnumValueA)) {
+            terminateCrashpadHandler();
+            ModApi::Instance().InitSkyBase();
+            ModLoader::LoadMods();
+        }
+        else print("Failed to hook fnRegEnumValue");
+
         CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);
     }
-    else {
-        print("Failed to load advapi32.dll");
-    }
+    else print("Failed to load advapi32.dll");
 }
 
 
