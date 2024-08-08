@@ -33,12 +33,26 @@ ModApi::ModApi() {
 lm_module_t mod;
 void ModApi::InitSkyBase() {
     /*
-        while (GetModuleHandle("Sky.exe") == 0)Sleep(100);
+        while (GetModuleHandle("Sky.exe") == 0)
+        Sleep(100);
         skyBase = (uintptr_t)LoadLibrary(TEXT("Sky.exe"));
     */
-    while (LM_LoadModule("Sky.exe", &mod) == 0) Sleep(100);
+
+    while(LM_LoadModule("Sky.exe", &mod) == 0) Sleep(100);
     skyBase = mod.base;
     skySize = mod.size;
+
+    /*
+    uintptr_t Sky_Base = reinterpret_cast<uintptr_t>(GetModuleHandle(nullptr));
+
+    size_t Sky_Size = []() -> size_t {
+        MODULEINFO moduleInfo;
+        if (GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &moduleInfo, sizeof(MODULEINFO))) {
+            return moduleInfo.SizeOfImage;
+        }
+        return 0;
+    }();
+    */
 }
 
 uintptr_t ModApi::GetSkyBase() {
