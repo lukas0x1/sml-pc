@@ -21,7 +21,6 @@ std::unordered_map<uintptr_t, std::vector<unsigned char>> patches;
 
 ModApi* ModApi::instance = NULL;
 
-
 ModApi& ModApi::Instance() {
     if (instance == NULL) instance = new ModApi;
     return *instance;
@@ -31,25 +30,15 @@ ModApi::ModApi() {
     skyBase = 0;
 }
 
+lm_module_t mod;
 void ModApi::InitSkyBase() {
     /*
-        while (GetModuleHandle("Sky.exe") == 0)
-        Sleep(100);
+        while (GetModuleHandle("Sky.exe") == 0)Sleep(100);
         skyBase = (uintptr_t)LoadLibrary(TEXT("Sky.exe"));
     */
-    // lm_module_t mod;
-    // while(LM_LoadModule("Sky.exe", &mod) == 0) Sleep(100);
-    // skyBase = mod.base;
-    // skySize = mod.size;
-    uintptr_t Sky_Base = reinterpret_cast<uintptr_t>(GetModuleHandle(nullptr));
-
-    size_t Sky_Size = []() -> size_t {
-        MODULEINFO moduleInfo;
-        if (GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &moduleInfo, sizeof(MODULEINFO))) {
-            return moduleInfo.SizeOfImage;
-        }
-        return 0;
-        }();
+    while (LM_LoadModule("Sky.exe", &mod) == 0) Sleep(100);
+    skyBase = mod.base;
+    skySize = mod.size;
 }
 
 uintptr_t ModApi::GetSkyBase() {
@@ -84,11 +73,13 @@ uintptr_t ModApi::ScanData(lm_bytearr_t data, size_t size, uintptr_t start, size
     return LM_DataScan(data, size, start, scansize);
 }
 
+
+// basic : basic memory hacking functions for use (this is mostly all you need from the api to make an okay hack).
 bool ModApi::Hook(uintptr_t addr, void* newFn, void** oldFn) {
     HookDef hook;
 
     if (hooks.contains(addr)) { // dogshit_check.cpp
-        printf("hooking : function is already hooked!");
+        std::cout << "hooking : function is already hooked!\n";
         return true;
     }
     hook.addr = addr; hook.newFn = newFn; hook.oldFn = oldFn;
@@ -111,7 +102,6 @@ bool ModApi::UnHook(uintptr_t addr) {
     }
     return false;
 }
-
 
 bool ModApi::Patch(uintptr_t address, const std::vector<unsigned char>& patchBytes, bool toggle) {
     address += skyBase; // Ensure address is relative to Sky_Base
@@ -191,10 +181,10 @@ bool ModApi::SetByte(uintptr_t address, std::vector<unsigned char> setByte) {
     return true;
 }
 
-// fastfunctions (basically functions checkless counterparts)
+// fastfunctions (basic) : (basically functions checkless counterparts)
 // WARNING : fastfunctions should only be used for patches if you are extremely confident that it wont kill your game.
 bool ModApi::FastHook(uintptr_t addr, void* newFn, void** oldFn) {
-    HookDef hook;   
+    HookDef hook;
 
     hook.addr = addr; hook.newFn = newFn; hook.oldFn = oldFn;
     hook.size = LM_HookCode(addr, (lm_address_t)newFn, (lm_address_t*)oldFn);
@@ -219,7 +209,6 @@ bool ModApi::FastPatch(uintptr_t address, const std::vector<unsigned char>& patc
     LM_WriteMemory(address, dataPtr, OriginalBytes[address].size());
     return true;
 }
-
 
 bool ModApi::FastUnpatch(uintptr_t address, const std::vector<unsigned char>& unpatchBytes) {
     size_t size = unpatchBytes.size();
@@ -250,3 +239,52 @@ bool ModApi::FastSetByte(uintptr_t address, std::vector<unsigned char> setByte) 
     return true;
 }
 
+// advanced : more "advanced" api functions for use when needed, you most likely wont need to use these but here when needed or when you want to use them.
+// TODO: fix some of the code if required. add checks for module loading/unloading to see if they exist
+bool ModApi::LoadExternalModule(char* path, lm_module_t* modbuf) {
+    if (!LM_LoadModule(path, modbuf)) {
+        std::cerr << "Failed to load external module from API: " << modbuf->name << std::endl;
+        return false;
+    }
+    else std::cout << "Success on external module loading! Information: " << modbuf->name << " | " << modbuf->base << std::endl;
+
+    return true;
+}
+
+bool ModApi::UnloadExternalModule(lm_module_t* modbuf) {
+    if (!LM_UnloadModule(modbuf)) {
+        std::cerr << "Failed to unload external module from API: " << modbuf->name << std::endl;
+        return false;
+    }
+    else std::cout << "Successfully unloaded requested module! Information: " << modbuf->name << " | " << modbuf->base << std::endl;
+
+    return true;
+}
+
+lm_address_t ModApi::AddressFromSymbol(char* symbolName) {
+    return LM_FindSymbolAddress(&mod, symbolName);
+}
+
+lm_address_t ModApi::AddressFromSymbol(char* symbolName, lm_module_t module) {
+    return LM_FindSymbolAddress(&module, symbolName);
+}
+
+lm_address_t ModApi::DemangledAddressFromSymbol(char* symbolName) {
+    return LM_FindSymbolAddressDemangled(&mod, symbolName);
+}
+
+lm_address_t ModApi::DemangledAddressFromSymbol(char* symbolName, lm_module_t module) {
+    return LM_FindSymbolAddressDemangled(&module, symbolName);
+}
+
+// fastfunctions (advanced) : (basically functions checkless counterparts)
+// WARNING : fastfunctions should only be used for patches if you are extremely confident that it wont kill your game.
+bool ModApi::FastLoadExternalModule(char* path, lm_module_t* modbuf) {
+    LM_LoadModule(path, modbuf);
+    return true;
+}
+
+bool ModApi::FastUnloadExternalModule(lm_module_t* modbuf) {
+    LM_UnloadModule(modbuf);
+    return true;
+}

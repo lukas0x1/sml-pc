@@ -277,11 +277,13 @@ void onAttach() {
     HMODULE handle = LoadLibrary("advapi32.dll");
     if (handle != NULL) {
         lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
-        LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t*)&oRegEnumValueA);
-        InitConsole();
-        terminateCrashpadHandler();
-        ModApi::Instance().InitSkyBase();
-        ModLoader::LoadMods();
+        if (LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t*)&oRegEnumValueA)) {
+            terminateCrashpadHandler();
+            ModApi::Instance().InitSkyBase();
+            ModLoader::LoadMods();
+        }
+        else printf("Failed to hook fnRegEnumValue");
+
         CreateThread(NULL, 0, console_thread, NULL, 0, NULL);
         CreateThread(NULL, 0, hook_thread, nullptr, 0, NULL);
     }

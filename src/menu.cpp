@@ -256,7 +256,7 @@ namespace Menu {
             ImGui::Separator();
             ImGui::Spacing();
 
-            ImGui::Text("FPS: %.f | %.2f ms | DeltaTime: %.2f | amb", io.Framerate, 1000.0f / io.Framerate, io.DeltaTime);
+            ImGui::Text("v1.0.3MT | FPS: %.f | %.2f ms | DeltaTime: %.2f", io.Framerate, 1000.0f / io.Framerate, io.DeltaTime);
         }
         ig::End();
     }
