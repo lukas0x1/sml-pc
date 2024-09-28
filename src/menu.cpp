@@ -1,7 +1,10 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <string>
 #include <format>
+#include <vector>
+#include <cstdlib>
 #include <imgui.h>
 #include <imgui_impl_win32.h>
 #include "include/menu.hpp"
@@ -19,7 +22,100 @@ struct FontConfig {
     unsigned int unicodeRangeEnd = 0;
 } fontconfig;
 
+std::vector<std::string> Server_Names;
+std::vector<std::string> Server_Urls;
+std::string Selected_Url;
+bool Server_Urls_Initialized = false;
+
 namespace Menu {
+
+    void ReadServerUrls(const std::string& filepath, std::vector<std::string>& names, std::vector<std::string>& urls) {
+        try {
+            std::ifstream file(filepath);
+            if (!file.is_open()) {
+                throw std::runtime_error("Could not open config file: " + filepath);
+            }
+
+            json j;
+            file >> j;
+
+            // Access the Server_Urls object and populate names and values vectors
+            for (const auto& item : j["Server_Urls"].items()) {
+                names.push_back(item.key());
+                urls.push_back(item.value().get<std::string>());
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Error reading server URLs: " << e.what() << std::endl;
+        }
+    }
+
+    std::string ReadDefaultServerUrl(const std::string& filepath) {
+        std::string line;
+        try {
+            std::ifstream file(filepath);
+            if (!file.is_open()) {
+                throw std::runtime_error("Could not open AppInfo file: " + filepath);
+            }
+
+            for (int i = 0; i < 2; ++i) { // Read the second line
+                std::getline(file, line);
+                if (file.eof()) {
+                    throw std::runtime_error("File does not have enough lines: " + filepath);
+                }
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Error reading default server URL: " << e.what() << std::endl;
+        }
+        return line;
+    }
+
+    void ShowServerUrlSelector(const std::vector<std::string>& names, const std::vector<std::string>& urls, std::string& selectedurl) {
+        if (ImGui::BeginCombo("Servers", selectedurl.c_str())) {
+            for (size_t i = 0; i < names.size(); ++i) {
+                bool isSelected = (urls[i] == selectedurl);
+                if (ImGui::Selectable(names[i].c_str(), isSelected)) {
+                    selectedurl = urls[i];
+                }
+                if (isSelected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+    }
+
+    void SaveSelectedServerUrl(const std::string& filepath, const std::string& selectedUrl) {
+        try {
+            std::ifstream infile(filepath);
+            if (!infile.is_open()) {
+                throw std::runtime_error("Could not open AppInfo file for reading: " + filepath);
+            }
+
+            std::string content;
+            std::string line;
+            int lineCount = 0;
+
+            while (std::getline(infile, line)) {
+                if (lineCount == 1) { // Replace the second line
+                    content += selectedUrl + "\n";
+                } else {
+                    content += line + "\n";
+                }
+                ++lineCount;
+            }
+            infile.close();
+
+            std::ofstream outfile(filepath);
+            if (!outfile.is_open()) {
+                throw std::runtime_error("Could not open AppInfo file for writing: " + filepath);
+            }
+
+            outfile << content;
+        } catch (const std::exception& e) {
+            std::cerr << "Error saving selected server URL: " << e.what() << std::endl;
+        }
+    }
+
     void loadFontConfig(const std::string& filename, FontConfig& fontconfig) {
         std::ifstream file(filename);
         if (!file.is_open()) {
@@ -238,6 +334,41 @@ namespace Menu {
             }
             ig::EndTable();
             ImGui::SeparatorText("Settings");
+
+            if (!Server_Urls_Initialized) {
+                ReadServerUrls("sml_config.json", Server_Names, Server_Urls);
+                Selected_Url = ReadDefaultServerUrl("data/AppInfo.tgc");
+                Server_Urls_Initialized = true;
+            }
+
+            ShowServerUrlSelector(Server_Names, Server_Urls, Selected_Url);
+            ImGui::SameLine();
+
+            static bool Save_Server_URL = false;
+            if (ImGui::Button("Save")) {
+                Save_Server_URL = true;
+                ImGui::OpenPopup("Confirmation");
+			}
+
+            if (Save_Server_URL) {
+                ImGui::SetNextWindowSize(ImVec2(365, 100));
+                if (ImGui::BeginPopupModal("Confirmation", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+                    ImGui::Text("Are you sure you want to save Server Url(requires Restart)?");
+                    ImGui::Spacing();
+
+                    if (ImGui::Button("Yes", ImVec2(120, 30))) {
+                        SaveSelectedServerUrl("data/AppInfo.tgc", Selected_Url);
+                        exit(0);
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("No", ImVec2(120, 30))) {
+                        ImGui::CloseCurrentPopup();
+                    }
+                    ImGui::EndPopup();
+                }
+			}
+            
             ShowFontSelector();
             ImGui::SameLine();
             HelpMarker(std::format("Total: {}\nPath: {}\nStart Range: {}\nEnd Range: {}\nSize: {}W / {}H\nConfig: sml_config.json", io.Fonts->Fonts.Size, fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd, io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
