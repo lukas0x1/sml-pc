@@ -96,6 +96,11 @@ namespace Menu {
             int lineCount = 0;
 
             while (std::getline(infile, line)) {
+                // Remove any trailing '\r' characters if there is any
+                if (!line.empty() && line.back() == '\r') {
+                    line.pop_back();
+                }
+                
                 if (lineCount == 1) { // Replace the second line
                     content += selectedUrl + "\n";
                 } else {
@@ -105,7 +110,7 @@ namespace Menu {
             }
             infile.close();
 
-            std::ofstream outfile(filepath);
+            std::ofstream outfile(filepath, std::ios::out | std::ios::binary);
             if (!outfile.is_open()) {
                 throw std::runtime_error("Could not open AppInfo file for writing: " + filepath);
             }
