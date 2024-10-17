@@ -135,8 +135,8 @@ void InitConsole(){
     fflush(stderr);
 }
 
-
-void loadWrapper(){
+// Integrated into onAttach()
+/*void loadWrapper() { 
     dllHandle = LoadLibrary("C:\\Windows\\System32\\powrprof.dll");
 
     if (dllHandle == NULL)
@@ -154,7 +154,7 @@ void loadWrapper(){
         }
     }
     else print("failed to load POWRPROF.dll");
-}
+}*/
 
 
 static WNDPROC oWndProc;
@@ -294,7 +294,23 @@ DWORD WINAPI hook_thread(PVOID lParam) {
 }
 
 void onAttach() {
-    loadWrapper();
+    //loadWrapper(); - Integrated into onAttach()
+    dllHandle = LoadLibrary("C:\\Windows\\System32\\powrprof.dll");
+
+    if (dllHandle == NULL) dllHandle = LoadLibrary("C:\\Windows\\System32\\POWRPROF.dll");
+    print("Loading powrprof.dll symbols...");
+
+    if (dllHandle != NULL) {
+        o_GetPwrCapabilities = (BOOLEAN(*)(PSYSTEM_POWER_CAPABILITIES))GetProcAddress(dllHandle, "GetPwrCapabilities");
+        o_CallNtPowerInformation = (NTSTATUS(*)(POWER_INFORMATION_LEVEL, PVOID, ULONG, PVOID, ULONG))GetProcAddress(dllHandle, "CallNtPowerInformation");
+        o_PowerDeterminePlatformRole = (POWER_PLATFORM_ROLE(*)())GetProcAddress(dllHandle, "PowerDeterminePlatformRole");
+
+        if (o_GetPwrCapabilities == nullptr || o_CallNtPowerInformation == nullptr || o_PowerDeterminePlatformRole == nullptr) {
+            print("Could not locate symbols in powrprof.dll");
+        }
+    }
+    else print("failed to load POWRPROF.dll");
+
     InitConsole();
     std::remove("SML.log");
     InitLogger();
@@ -307,6 +323,8 @@ void onAttach() {
     HMODULE handle = LoadLibrary("advapi32.dll");
     if (handle != NULL) {
         lm_address_t fnRegEnumValue = (lm_address_t)GetProcAddress(handle, "RegEnumValueA");
+        if (fnRegEnumValue == NULL) { std::cerr << "fnRegEnumValue address is null, possible corrupted file" << std::endl; return; } // this usually never happens, but still check just in case
+
         if (LM_HookCode(fnRegEnumValue, (lm_address_t)&hkRegEnumValueA, (lm_address_t*)&oRegEnumValueA)) {
             terminateCrashpadHandler();
             ModApi::Instance().InitSkyBase();

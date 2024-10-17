@@ -63,14 +63,15 @@ namespace Menu {
                     throw std::runtime_error("File does not have enough lines: " + filepath);
                 }
             }
-        } catch (const std::exception& e) {
+        } 
+        catch (const std::exception& e) {
             std::cerr << "Error reading default server URL: " << e.what() << std::endl;
         }
         return line;
     }
 
     void ShowServerUrlSelector(const std::vector<std::string>& names, const std::vector<std::string>& urls, std::string& selectedurl) {
-        if (ImGui::BeginCombo("Servers", selectedurl.c_str())) {
+        if (ImGui::BeginCombo("Server", selectedurl.c_str())) {
             for (size_t i = 0; i < names.size(); ++i) {
                 bool isSelected = (urls[i] == selectedurl);
                 if (ImGui::Selectable(names[i].c_str(), isSelected)) {
@@ -219,7 +220,7 @@ namespace Menu {
         style->WindowBorderSize = 1;
         style->ChildBorderSize = 1;
         style->PopupBorderSize = 1;
-        style->FrameBorderSize = 0; // ??
+        style->FrameBorderSize = 0;
         style->TabBorderSize = 1;
         style->TabBarBorderSize = 1;
         style->WindowRounding = 6;
@@ -338,58 +339,75 @@ namespace Menu {
                 HelpMarker(ModLoader::toString(i).c_str());
             }
             ig::EndTable();
-            ImGui::SeparatorText("Settings");
+            ig::SeparatorText("Settings");
+
+            ShowFontSelector();
+            ig::SameLine();
+            HelpMarker(std::format("Total: {}\nPath: {}\nStart Range: {}\nEnd Range: {}\nSize: {}W / {}H\nConfig: sml_config.json", io.Fonts->Fonts.Size, fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd, io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
+
+            const float MIN_SCALE = 0.3f;
+            const float MAX_SCALE = 3.0f;
+            static float window_scale = 1.0f;
+            if (ig::DragFloat("Window Scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp))
+                ig::SetWindowFontScale(window_scale);
+            ig::DragFloat("Global Scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+
+            ig::Spacing();
+
+            ig::PushStyleVar(ImGuiStyleVar_SeparatorTextBorderSize, 1.f);
+            ig::SeparatorText("Custom Server");
+            ig::PopStyleVar();
 
             if (!Server_Urls_Initialized) {
                 ReadServerUrls("sml_config.json", Server_Names, Server_Urls);
                 Selected_Url = ReadDefaultServerUrl("data/AppInfo.tgc");
                 Server_Urls_Initialized = true;
             }
-
             ShowServerUrlSelector(Server_Names, Server_Urls, Selected_Url);
-            ImGui::SameLine();
+            ig::SameLine();
 
             static bool Save_Server_URL = false;
-            if (ImGui::Button("Save")) {
+            if (ig::Button("Save")) {
                 Save_Server_URL = true;
-                ImGui::OpenPopup("Confirmation");
-			}
+                ig::OpenPopup("Confirmation");
+            }
 
             if (Save_Server_URL) {
-                ImGui::SetNextWindowSize(ImVec2(365, 100));
-                if (ImGui::BeginPopupModal("Confirmation", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
-                    ImGui::Text("Are you sure you want to save Server Url(requires Restart)?");
-                    ImGui::Spacing();
+                ig::SetNextWindowSize(ImVec2(365, 120));
+                if (ig::BeginPopupModal("Confirmation", NULL, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove)) {
+                    ig::TextWrapped("Are you sure you want to connect to this server? Your game will close to save changes.");
+                    ig::Spacing();
 
-                    if (ImGui::Button("Yes", ImVec2(120, 30))) {
+                    if (ig::Button("Yes", ImVec2(120, 30))) {
                         SaveSelectedServerUrl("data/AppInfo.tgc", Selected_Url);
                         exit(0);
-                        ImGui::CloseCurrentPopup();
+                        ig::CloseCurrentPopup();
                     }
-                    ImGui::SameLine();
-                    if (ImGui::Button("No", ImVec2(120, 30))) {
-                        ImGui::CloseCurrentPopup();
+                    ig::SameLine();
+                    if (ig::Button("No", ImVec2(120, 30))) {
+                        ig::CloseCurrentPopup();
                     }
-                    ImGui::EndPopup();
+                    ig::EndPopup();
                 }
-			}
-            
-            ShowFontSelector();
-            ImGui::SameLine();
-            HelpMarker(std::format("Total: {}\nPath: {}\nStart Range: {}\nEnd Range: {}\nSize: {}W / {}H\nConfig: sml_config.json", io.Fonts->Fonts.Size, fontconfig.fontPath.c_str(), fontconfig.unicodeRangeStart, fontconfig.unicodeRangeEnd, io.Fonts->TexWidth, io.Fonts->TexHeight).c_str());
+            }
 
-            const float MIN_SCALE = 0.3f;
-            const float MAX_SCALE = 3.0f;
-            static float window_scale = 1.0f;
-            if (ImGui::DragFloat("Window Scale", &window_scale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp))
-                ImGui::SetWindowFontScale(window_scale);
-            ImGui::DragFloat("Global Scale", &io.FontGlobalScale, 0.005f, MIN_SCALE, MAX_SCALE, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+            ig::Spacing();
+            ig::Separator();
+            ig::Spacing();
 
-            ImGui::Spacing();
-            ImGui::Separator();
-            ImGui::Spacing();
+            ig::Text("v0.1.4 | FPS: %.f | %.2f ms | DeltaTime: %.2f", io.Framerate, 1000.0f / io.Framerate, io.DeltaTime);
+            ig::SameLine(330);
+            if (ig::SmallButton("Credits")) {
+                std::cout << 
+R"text(
+------------------------------------------------------------
+               | SML Loader / Sky Mod Loader |
+   Developed by lukas0x1, TheSR, XeTrinityz, and yunkunsky!
 
-            ImGui::Text("v0.1.3 | FPS: %.f | %.2f ms | DeltaTime: %.2f", io.Framerate, 1000.0f / io.Framerate, io.DeltaTime);
+> Thank you for using SML Loader!             [Build v0.1.4]
+------------------------------------------------------------
+)text";
+            }
         }
         ig::End();
     }
