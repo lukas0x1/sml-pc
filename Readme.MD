@@ -20,3 +20,7 @@ cmake .. -G "NMake Makefiles" -D CMAKE_BUILD_TYPE="Release"
 nmake
 ```
 ## VS has issue with libmem when linking so use CLI (x64 Native Tools Command Prompt for VS 2022)
+
+
+### Contact
+https://discord.gg/B5YEuvmT
